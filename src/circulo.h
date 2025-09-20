@@ -4,10 +4,14 @@
 
 
 
-/*
- Esse módulo é responsável pela administração da estrutura abstrata que representa círculos em um plano bidimensional,
- contendo operações básicas para o gerenciamento de seus atributos e calculo de sua área
-*/
+/**
+ * @file circulo.h
+ * @brief Interface para o módulo de Circulo.
+ *
+ * Este módulo define uma estrutura abstrata para representar um circulo
+ * e fornece funções para criação, acesso, modificação e desalocação de circulos,
+ * além de cálculo de área.
+ */
 
 
 
