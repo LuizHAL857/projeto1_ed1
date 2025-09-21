@@ -127,7 +127,7 @@ void setCorLinha(LINHA l, char* cor);
  * No contexto deste programa, define-se a "área" da linha como sendo 10 vezes
  * o seu comprimento, ou seja:
  *
- *     área = 10 * sqrt((x2 - x1)² + (y2 - y1)²)
+ *     área = 2 * sqrt((x2 - x1)² + (y2 - y1)²)
  *
  * Essa definição permite a comparação com áreas de figuras geométricas reais.
  *

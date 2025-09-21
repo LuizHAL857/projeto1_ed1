@@ -147,7 +147,7 @@ float calculoAreaLinha(LINHA l){
 
     linha *lTemp = ((linha*)l);
 
-    float area = 10 * sqrt(pow( lTemp->x1 -lTemp->x2, 2) + pow( lTemp->y1 - lTemp->y2, 2));
+    float area = 2 * sqrt(pow( lTemp->x1 -lTemp->x2, 2) + pow( lTemp->y1 - lTemp->y2, 2));
     
     return area;
 }
