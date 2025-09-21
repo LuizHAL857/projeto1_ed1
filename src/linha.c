@@ -12,6 +12,8 @@ typedef struct {
     float x2;
     float y2;
     char* cor;
+
+    
 }linha;
 
 LINHA criaLinha(int id, float x1, float y1, float x2, float y2, char* cor){
@@ -146,8 +148,10 @@ void setCorLinha(LINHA l, char* cor){
 float calculoAreaLinha(LINHA l){
 
     linha *lTemp = ((linha*)l);
+    float dx = lTemp->x1 - lTemp->x2;
+    float dy = lTemp->y1 - lTemp->y2;
 
-    float area = 2 * sqrt(pow( lTemp->x1 -lTemp->x2, 2) + pow( lTemp->y1 - lTemp->y2, 2));
+    float area = 2 * sqrt(pow(dx, 2) + pow(dy, 2));
     
     return area;
 }
