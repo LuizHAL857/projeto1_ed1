@@ -164,7 +164,7 @@ char* getFSTexto(TEXTO t){
 }
 
 
-float comprimentoTexto(TEXTO t){
+float getComprimentoTexto(TEXTO t){
 
     texto *tTemp = ((texto*)t);
 
@@ -179,7 +179,7 @@ float getX1Texto(TEXTO t){
     texto *tTemp = ((texto*)t);
 
     float x1;
-    float cl = comprimentoTexto(t);
+    float cl = getComprimentoTexto(t);
 
 
 
@@ -207,7 +207,7 @@ float getX2Texto(TEXTO t){
     texto *tTemp = ((texto*)t);
 
     float x2;
-    float cl = comprimentoTexto(t);
+    float cl = getComprimentoTexto(t);
 
 
 
@@ -376,5 +376,5 @@ void desalocaTexto(TEXTO t){
     free(tTemp->fs);
 
     free(tTemp);
-    
+
 }

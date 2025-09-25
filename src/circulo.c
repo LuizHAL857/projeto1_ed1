@@ -151,7 +151,7 @@ void setCorBCirculo(CIRCULO c, char *corB){
     strcpy(cTemp->corB, corB);
 }
 
-void setCorBCirculo(CIRCULO c, char *corP){
+void setCorPCirculo(CIRCULO c, char *corP){
 
     circulo *cTemp = ((circulo*)c);
     free(cTemp->corP);

@@ -139,4 +139,4 @@ float calculoAreaRetangulo(RETANGULO r);
  */
 void desalocarRetangulo(RETANGULO r);
 
-#endif /
+#endif 

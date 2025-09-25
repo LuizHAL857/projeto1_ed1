@@ -164,7 +164,7 @@
  /**
   * @brief Retorna o comprimento de linha do texto conforme o especificado (10 * número de caracteres)
   */
- float comprimentoTexto(TEXTO t);
+ float getComprimentoTexto(TEXTO t);
  
  /**
   * @brief Calcula a área aproximada ocupada pelo texto.
