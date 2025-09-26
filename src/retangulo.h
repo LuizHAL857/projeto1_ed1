@@ -5,7 +5,7 @@
  * @file retangulo.h
  * @brief Interface para o módulo de Retângulo.
  *
- * Este módulo define uma estrutura abstrata para representar um retângulo
+ * Este módulo define uma estrutura abstrata para representar um retângulo em um plano 2d, seguindo os padrões svg
  * e fornece funções para criação, acesso, modificação e desalocação de retângulos,
  * além de cálculo de área.
  */

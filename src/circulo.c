@@ -94,14 +94,6 @@ char* getCorPCirculo(CIRCULO c){
     return cTemp->corP;
 }
 
-float calculoAreaCirculo(CIRCULO c){
-
-    circulo *cTemp = ((circulo*)c);
-    
-    float area = (cTemp->raio) * (cTemp->raio) * 3.14;
-
-    return area;
-}
 
 void setIDCirculo(CIRCULO c, int id){
 
@@ -166,6 +158,17 @@ void setCorPCirculo(CIRCULO c, char *corP){
 
     strcpy(cTemp->corP, corP);
 }
+
+
+float calculoAreaCirculo(CIRCULO c){
+
+    circulo *cTemp = ((circulo*)c);
+    
+    float area = (cTemp->raio) * (cTemp->raio) * 3.14;
+
+    return area;
+}
+
 
 void desalocaCirculo(CIRCULO c){
 

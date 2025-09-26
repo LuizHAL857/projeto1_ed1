@@ -5,7 +5,7 @@
  * @file linha.h
  * @brief Interface para a estrutura de uma linha geométrica.
  *
- * Este módulo define um tipo abstrato de dado para representar uma linha em um plano 2D,
+ * Este módulo define um tipo abstrato de dado para representar uma linha em um plano 2D, seguindo os padrões svg
  * juntamente com funções para criar, acessar, modificar e desalocar linhas.
  */
 

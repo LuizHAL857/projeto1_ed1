@@ -1,14 +1,14 @@
 #ifndef CIRCULO_H
 #define CIRCULO_H
 
-
+#include <stdlib.h>
 
 
 /**
  * @file circulo.h
  * @brief Interface para o módulo de Circulo.
  *
- * Este módulo define uma estrutura abstrata para representar um circulo
+ * Este módulo define uma estrutura abstrata para representar um circulo, seguindo os padrões svg
  * e fornece funções para criação, acesso, modificação e desalocação de circulos,
  * além de cálculo de área.
  */
@@ -77,13 +77,6 @@ float getYCirculo(CIRCULO c);
  */
 float getRaioCirculo(CIRCULO c);
 
-/**
- * @brief Retorna a cor de preenchimento do círculo.
- * 
- * @param c Ponteiro para o círculo.
- * @return char* String contendo a cor de preenchimento.
- */
-char* getCorPCirculo(CIRCULO c);
 
 /**
  * @brief Retorna a cor da borda do círculo.
@@ -92,6 +85,17 @@ char* getCorPCirculo(CIRCULO c);
  * @return char* String contendo a cor da borda.
  */
 char* getCorBCirculo(CIRCULO c);
+
+
+/**
+ * @brief Retorna a cor de preenchimento do círculo.
+ * 
+ * @param c Ponteiro para o círculo.
+ * @return char* String contendo a cor de preenchimento.
+ */
+char* getCorPCirculo(CIRCULO c);
+
+
 
 
 
@@ -132,13 +136,7 @@ void setYCirculo(CIRCULO c, float y);
  */
 void setRaioCirculo(CIRCULO c, float raio);
 
-/**
- * @brief Define a cor de preenchimento do círculo.
- * 
- * @param c Ponteiro para o círculo.
- * @param corP Nova cor de preenchimento (string).
- */
-void setCorPCirculo(CIRCULO c, char* corP);
+
 
 /**
  * @brief Define a cor da borda do círculo.
@@ -147,6 +145,17 @@ void setCorPCirculo(CIRCULO c, char* corP);
  * @param corB Nova cor da borda (string).
  */
 void setCorBCirculo(CIRCULO c, char* corB);
+
+
+/**
+ * @brief Define a cor de preenchimento do círculo.
+ * 
+ * @param c Ponteiro para o círculo.
+ * @param corP Nova cor de preenchimento (string).
+ */
+void setCorPCirculo(CIRCULO c, char* corP);
+
+
 
 
 //MÉTODOS ADICIONAIS
