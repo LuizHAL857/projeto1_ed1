@@ -2,12 +2,11 @@
 #define PILHA_H
 
 /**
- 
  * Este módulo define uma estrutura de dados do tipo pilha (stack) com
  * alocação dinâmica. A pilha segue o comportamento LIFO (Last In, First Out),
  * permitindo inserções e remoções apenas no topo.
  *
- * Os elementos armazenados na pilha são ponteiros genéricos ,
+ * Os elementos armazenados na pilha são ponteiros genéricos,
  * permitindo o uso com diferentes tipos de dados. O gerenciamento da memória
  * dos conteúdos apontados é responsabilidade do usuário.
  *
@@ -23,63 +22,63 @@
 #include <stdlib.h>
 
 /**
- * Tipo opaco que representa a estrutura da Pilha.
+ * @brief Tipo abstrato que representa a pilha como um ponteiro genérico.
  */
-typedef struct Pilha Pilha;
+typedef void* Pilha;
 
 /**
  * @brief Cria uma nova pilha vazia.
  * 
- * @return Ponteiro para a pilha criada.
+ * @return Pilha criada (ponteiro opaco).
  */
-Pilha* criaPilha();
+Pilha criaPilha();
 
 /**
  * @brief Insere um elemento no topo da pilha.
  * 
- * @param pilha Ponteiro para a pilha.
+ * @param pilha Pilha na qual o elemento será inserido.
  * @param conteudo Ponteiro para o conteúdo a ser inserido.
  * @return true se a inserção for bem-sucedida, false caso contrário.
  */
-bool pushPilha(Pilha *pilha, void *conteudo);
+bool pushPilha(Pilha pilha, void *conteudo);
 
 /**
  * @brief Remove o elemento do topo da pilha.
  * 
- * @param pilha Ponteiro para a pilha.
+ * @param pilha Pilha de onde o elemento será removido.
  * @return Ponteiro para o conteúdo removido ou NULL se a pilha estiver vazia.
  */
-void* popPilha(Pilha *pilha);
+void* popPilha(Pilha pilha);
 
 /**
  * @brief Retorna o conteúdo do topo da pilha sem removê-lo.
  * 
- * @param pilha Ponteiro para a pilha.
+ * @param pilha Pilha a ser consultada.
  * @return Ponteiro para o conteúdo do topo ou NULL se a pilha estiver vazia.
  */
-void* topoPilha(Pilha* pilha);
+void* topoPilha(Pilha pilha);
 
 /**
  * @brief Verifica se a pilha está vazia.
  * 
- * @param pilha Ponteiro para a pilha.
+ * @param pilha Pilha a ser verificada.
  * @return true se estiver vazia, false caso contrário.
  */
-bool pilhaVazia(Pilha* pilha);
+bool pilhaVazia(Pilha pilha);
 
 /**
  * @brief Retorna a quantidade de elementos na pilha.
  * 
- * @param pilha Ponteiro para a pilha.
+ * @param pilha Pilha a ser consultada.
  * @return Número de elementos na pilha.
  */
-int tamanhoPilha(Pilha* pilha);
+int tamanhoPilha(Pilha pilha);
 
 /**
  * @brief Libera toda a memória alocada pela pilha.
  * 
- * @param pilha Ponteiro para a pilha a ser desalocada.
+ * @param pilha Pilha a ser desalocada.
  */
-void desalocaPilha(Pilha *pilha);
+void desalocaPilha(Pilha pilha);
 
-#endif // PILHA_H
+#endif

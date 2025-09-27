@@ -1,5 +1,5 @@
-#ifndef TRATA_ARGUMENTOS
-#define TRATA_ARGUMENTOS
+#ifndef TRATA_ARGUMENTOS_H
+#define TRATA_ARGUMENTOS_H
 
 /**
  * @file trata_argumentos.h
@@ -26,4 +26,4 @@
   */
 char* get_option(int argc, char *argv[], char* option_name);
 
-#endif // TRATA_ARGUMENTOS
+#endif 

@@ -22,6 +22,7 @@
   */
  typedef void* TEXTO;
  
+ 
  /**
   * @brief Cria um novo objeto TEXTO com os atributos especificados.
   * 

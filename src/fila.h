@@ -26,63 +26,64 @@
 #include <stdlib.h>
 
 /**
- * Tipo opaco que representa a estrutura da Fila.
+ * @brief Tipo opaco que representa uma fila genérica.
+ * O ponteiro é tratado internamente como `struct stFila*`.
  */
-typedef struct Fila Fila;
+typedef void* Fila;
 
 /**
  * @brief Cria uma nova fila vazia.
  * 
- * @return Ponteiro para a fila criada.
+ * @return Fila criada (ponteiro opaco).
  */
-Fila* criaFila();
+Fila criaFila();
 
 /**
  * @brief Insere um elemento no final da fila.
  * 
- * @param fila Ponteiro para a fila.
+ * @param fila Fila onde o elemento será inserido.
  * @param conteudo Ponteiro para o conteúdo a ser inserido.
  * @return true se a inserção for bem-sucedida, false caso contrário.
  */
-bool enqueueFila(Fila *fila, void *conteudo);
+bool enqueueFila(Fila fila, void *conteudo);
 
 /**
  * @brief Remove o primeiro elemento da fila.
  * 
- * @param fila Ponteiro para a fila.
+ * @param fila Fila de onde o elemento será removido.
  * @return Ponteiro para o conteúdo removido ou NULL se a fila estiver vazia.
  */
-void* dequeueFila(Fila *fila);
+void* dequeueFila(Fila fila);
 
 /**
  * @brief Retorna o conteúdo do início da fila sem removê-lo.
  * 
- * @param fila Ponteiro para a fila.
- * @return Ponteiro para o conteúdo do início da fila ou NULL se a fila estiver vazia.
+ * @param fila Fila a ser consultada.
+ * @return Ponteiro para o conteúdo ou NULL se a fila estiver vazia.
  */
-void* inicioFila(Fila *fila);
+void* inicioFila(Fila fila);
 
 /**
  * @brief Verifica se a fila está vazia.
  * 
- * @param fila Ponteiro para a fila.
+ * @param fila Fila a ser verificada.
  * @return true se a fila estiver vazia, false caso contrário.
  */
-bool filaVazia(Fila *fila);
+bool filaVazia(Fila fila);
 
 /**
  * @brief Retorna a quantidade de elementos na fila.
  * 
- * @param fila Ponteiro para a fila.
+ * @param fila Fila a ser consultada.
  * @return Número de elementos na fila.
  */
-int tamanhoFila(Fila *fila);
+int tamanhoFila(Fila fila);
 
 /**
  * @brief Libera toda a memória alocada pela fila.
  * 
- * @param fila Ponteiro para a fila a ser desalocada.
+ * @param fila Fila a ser desalocada.
  */
-void desalocaFila(Fila* fila);
+void desalocaFila(Fila fila);
 
-#endif // FILA_H
+#endif
