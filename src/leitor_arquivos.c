@@ -1,125 +1,161 @@
 
-
 #include "leitor_arquivos.h"
+#include "fila.h"
+#include "pilha.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "fila.h"
+// Estrutura que representa os dados de um arquivo
+struct DadosDoArquivo {
+    const char *caminhoArquivo;
+    const char *nomeArquivo;
+    Fila filaDeLinhas;
+    // Esta pilha é usada para liberar as linhas do
+    // arquivo após a execução dos comandos
+    Pilha pilhaLinhasParaLiberar;
+  };
+  
+  // Estrutura auxiliar que guarda uma fila e uma pilha de linhas
+  struct FilaEPilhaDeLinhas {
+    Fila filaDeLinhas;
+    Pilha pilhaLinhasParaLiberar;
+  };
+  
+  // Funções privadas
+  static char *ler_linha(FILE *arquivo, char *buffer, size_t tamanho);
 
-// Funções privadas
-static Fila ler_arquivo_para_fila(const char *caminho_arquivo);
-static char *ler_linha(FILE *arquivo, char *buffer, size_t tamanho);
-static char *duplicate_string(const char *str);
+  static struct FilaEPilhaDeLinhas *
+  ler_arquivo_para_fila_e_pilha(const char *caminhoArquivo);
 
-struct DadosArquivo {
-    const char *caminho;
-    const char *nome_arquivo;
-    Fila fila_linhas;
-};
-
-// Cria uma nova instância DadosArquivo e lê o arquivo
-DadosArquivo *dados_arquivo_criar(const char *caminho_arquivo) {
-    DadosArquivo *arquivo = malloc(sizeof(DadosArquivo));
+  char *duplicaString(const char *s) ;
+  
+ 
+  DadosDoArquivo criar_dados_arquivo(const char *caminhoArquivo) {
+    struct DadosDoArquivo *arquivo = malloc(sizeof(struct DadosDoArquivo));
     if (arquivo == NULL) {
-        printf("[ERRO] Falha ao alocar memória para DadosArquivo\n");
-        return NULL;
+      printf("Erro: Falha ao alocar memória para DadosDoArquivo\n");
+      return NULL;
     }
-
-    arquivo->caminho = caminho_arquivo;
-    arquivo->nome_arquivo = 
-        strrchr(caminho_arquivo, '/') ? strrchr(caminho_arquivo, '/') + 1 : caminho_arquivo;
-
-    Fila fila = ler_arquivo_para_fila(caminho_arquivo);
-    if (fila == NULL) {
-        printf("[ERRO] Falha ao ler as linhas do arquivo\n");
-        free(arquivo);
-        return NULL;
+  
+    arquivo->caminhoArquivo = caminhoArquivo;
+    arquivo->nomeArquivo =
+        strrchr(caminhoArquivo, '/') ? strrchr(caminhoArquivo, '/') + 1 : caminhoArquivo;
+  
+    struct FilaEPilhaDeLinhas *filaEPilha =
+        ler_arquivo_para_fila_e_pilha(caminhoArquivo);
+  
+    if (filaEPilha == NULL || filaEPilha->filaDeLinhas == NULL ||
+        filaEPilha->pilhaLinhasParaLiberar == NULL) {
+      printf("Erro: Falha ao ler as linhas do arquivo\n");
+      if (filaEPilha != NULL) {
+        free(filaEPilha);
+      }
+      return NULL;
     }
-    arquivo->fila_linhas = fila;
-    return arquivo;
-}
-
-// Destroi DadosArquivo e libera memória
-void dados_arquivo_destruir(DadosArquivo *dados) {
-    if (dados != NULL) {
-        if (dados->fila_linhas != NULL) {
-            // Liberar cada string dentro da fila antes de desalocar a fila
-            while (!filaVazia(dados->fila_linhas)) {
-                char *linha = (char *)dequeueFila(dados->fila_linhas);
-                free(linha);
-            }
-            desalocaFila(dados->fila_linhas);
-        }
-        free(dados);
+  
+    arquivo->filaDeLinhas = filaEPilha->filaDeLinhas;
+    arquivo->pilhaLinhasParaLiberar = filaEPilha->pilhaLinhasParaLiberar;
+    free(filaEPilha);
+    return (DadosDoArquivo)arquivo;
+  }
+  
+ 
+  static struct FilaEPilhaDeLinhas *
+  ler_arquivo_para_fila_e_pilha(const char *caminhoArquivo) {
+    struct FilaEPilhaDeLinhas *filaEPilha =
+        malloc(sizeof(struct FilaEPilhaDeLinhas));
+    if (filaEPilha == NULL) {
+      printf("Erro: Falha ao alocar memória para Fila E Pilha De Linhas\n");
+      return NULL;
     }
-}
-
-// Lê arquivo e retorna fila com linhas duplicadas
-static Fila ler_arquivo_para_fila(const char *caminho_arquivo) {
+  
     Fila fila = criaFila();
-    if (!fila) return NULL;
-
-    FILE *arquivo = fopen(caminho_arquivo, "r");
+    Pilha pilha = criaPilha();
+    FILE *arquivo = fopen(caminhoArquivo, "r");
     if (arquivo == NULL) {
+    
+      if (fila != NULL) {
         desalocaFila(fila);
-        return NULL;
+      }
+      if (pilha != NULL) {
+        desalocaPilha(pilha);
+      }
+      free(filaEPilha);
+      return NULL;
     }
-
+  
     char buffer[1024];
     while (ler_linha(arquivo, buffer, sizeof(buffer)) != NULL) {
-        char *linha_dup = duplicate_string(buffer);
-        if (!linha_dup) {
-            printf("[ERRO] Falha ao alocar memória para linha\n");
-            fclose(arquivo);
-            while (!filaVazia(fila)) {
-                free(dequeueFila(fila));
-            }
-            desalocaFila(fila);
-            return NULL;
-        }
-        enqueueFila(fila, linha_dup);
+      char *linha = duplicaString(buffer);
+      enqueueFila(fila, linha);
+      pushPilha(pilha, linha);
     }
-
+  
     fclose(arquivo);
-    return fila;
-}
-
-// Lê uma linha do arquivo, removendo '\n' se presente
-static char *ler_linha(FILE *arquivo, char *buffer, size_t tamanho) {
+    // Atribui as estruturas criadas à estrutura antes de retornar
+    filaEPilha->filaDeLinhas = fila;
+    filaEPilha->pilhaLinhasParaLiberar = pilha;
+    return filaEPilha;
+  }
+  
+  // Destroi uma instância de DadosDoArquivo e libera memória
+  void destruir_dados_arquivo(DadosDoArquivo dadosArquivo) {
+    if (dadosArquivo != NULL) {
+      struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
+      // Libera as linhas do arquivo
+      while (!pilhaVazia(arquivo->pilhaLinhasParaLiberar)) {
+        void *linha = popPilha(arquivo->pilhaLinhasParaLiberar);
+        linha != NULL ? free(linha) : NULL;
+      }
+      // Destroi a pilha de linhas
+      desalocaPilha(arquivo->pilhaLinhasParaLiberar);
+      // Destroi a fila de linhas
+      desalocaFila(arquivo->filaDeLinhas);
+      // Libera a estrutura de dados do arquivo
+      free(dadosArquivo);
+    }
+  }
+  
+  // Retorna o caminho do arquivo
+  const char *obter_caminho_arquivo(const DadosDoArquivo dadosArquivo) {
+    struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
+    return arquivo->caminhoArquivo;
+  }
+  
+  // Retorna o nome do arquivo
+  const char *obter_nome_arquivo(const DadosDoArquivo dadosArquivo) {
+    struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
+    return arquivo->nomeArquivo;
+  }
+  
+  // Retorna a fila de linhas do arquivo
+  Fila obter_fila_linhas(const DadosDoArquivo dadosArquivo) {
+    struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
+    return arquivo->filaDeLinhas;
+  }
+  
+  // Lê uma linha do arquivo usando fgets
+  static char *ler_linha(FILE *arquivo, char *buffer, size_t tamanho) {
     if (fgets(buffer, tamanho, arquivo) != NULL) {
-        size_t len = strlen(buffer);
-        if (len > 0 && buffer[len - 1] == '\n') {
-            buffer[len - 1] = '\0';
-        }
-        return buffer;
+     
+      size_t len = strlen(buffer);
+      if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0';
+      }
+      return buffer;
     }
     return NULL;
-}
-
-// Duplica string (substituto para strdup)
-static char *duplicate_string(const char *str) {
-    if (!str) return NULL;
-    size_t len = strlen(str) + 1;
-    char *copy = malloc(len);
-    if (copy) memcpy(copy, str, len);
-    return copy;
-}
-
-// Retorna caminho completo do arquivo
-const char *obter_caminho_arquivo(const DadosArquivo *dados) {
-    if (!dados) return NULL;
-    return dados->caminho;
-}
-
-// Retorna nome do arquivo (sem caminho)
-const char *obter_nome_arquivo(const DadosArquivo *dados) {
-    if (!dados) return NULL;
-    return dados->nome_arquivo;
-}
-
-// Retorna fila com linhas do arquivo
-Fila obter_fila_linhas(const DadosArquivo *dados) {
-    if (!dados) return NULL;
-    return dados->fila_linhas;
-}
+  }
+  
+  char *duplicaString(const char *s) {
+    if (s == NULL)
+      return NULL;
+  
+    size_t len = strlen(s) + 1;
+    char *dup = malloc(len);
+    if (dup != NULL) {
+      strcpy(dup, s);
+    }
+    return dup;
+  }
