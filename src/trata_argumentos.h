@@ -1,29 +1,19 @@
 #ifndef TRATA_ARGUMENTOS_H
 #define TRATA_ARGUMENTOS_H
 
-/**
- * @file trata_argumentos.h
- * @brief Módulo para tratamento simples de argumentos da linha de comando.
- *
- * Este módulo fornece uma função para obter o valor associado a uma opção
- * passada via linha de comando no formato "-opcao valor".
- * 
- * Ele facilita a extração de argumentos em programas C, buscando uma opção
- * específica e retornando o valor que está imediatamente após ela nos argumentos.
- */
+/*
+    Este módulo contém as funções que serão
+    utilizadas para tratar os argumentos
+    que serão passados para o programa
+*/
 
- /**
-  * @brief Obtém o valor associado a uma opção passada via linha de comando.
-  *
-  * Procura pela opção "-option_name" no vetor de argumentos e retorna o valor
-  * que está imediatamente após essa opção.
-  *
-  * @param argc Número de argumentos passados pela linha de comando.
-  * @param argv Vetor de strings contendo os argumentos da linha de comando.
-  * @param option_name Nome da opção a ser buscada (sem o prefixo '-').
-  * 
-  * @return Ponteiro para a string do valor da opção, ou NULL se não encontrada.
-  */
-char* get_option(int argc, char *argv[], char* option_name);
+
+// Declaração da função que estará no módulo tratador de argumentos
+char *obter_valor_opcao(int argc, char *argv[], char *nome_opcao);
+
+// Função para extrair o sufixo do comando (última string que não começa com '-')
+char *obter_sufixo_comando(int argc, char *argv[]);
 
 #endif 
+
+
