@@ -6,12 +6,14 @@
 
 typedef struct {
 
+    
     int id;
     float x1;
     float y1;
     float x2;
     float y2;
     char* cor;
+    
 
     
 }linha;
@@ -27,11 +29,13 @@ LINHA criaLinha(int id, float x1, float y1, float x2, float y2, char* cor){
         exit(1);
     }
 
+   
     l->id = id;
     l->x1 = x1;
     l->y1 = y1;
     l->x2 = x2;
     l->y2 = y2;
+    
 
     l->cor = (char*)malloc(sizeof(char) * strlen(cor) +1);
 

@@ -6,13 +6,14 @@
 
 typedef struct {
 
+  
     int id;
     float x;
     float y;
     float raio;
     char *corP;
     char *corB;
-
+    
 }circulo;
 
 
@@ -27,10 +28,12 @@ CIRCULO criaCirculo(int id, float x, float y, float raio, char *corP, char *corB
         exit(1);
     }
 
+    
     c->id = id;
     c->x = x;
     c->y = y;
     c->raio = raio;
+    
     
     c->corB = (char*) malloc(sizeof(char)*strlen(corB) + 1);
     if(c->corB == NULL){
@@ -178,3 +181,5 @@ void desalocaCirculo(CIRCULO c){
     free(cTemp);
 
 }
+
+

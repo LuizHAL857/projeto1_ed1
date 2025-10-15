@@ -6,6 +6,7 @@
 
 typedef struct {
 
+    
     int id;
     float x;
     float y;
@@ -13,6 +14,7 @@ typedef struct {
     float largura;
     char *corP;
     char *corB;
+  
 
 }retangulo;
 
@@ -34,6 +36,8 @@ RETANGULO criaRetangulo(int id, float x, float y, float altura, float largura, c
     r->y = y;
     r->altura = altura;
     r->largura = largura;
+    
+
 
     r->corB =(char*)malloc(sizeof(char) * strlen(corB) +1);
     r->corP =(char*)malloc(sizeof(char) * strlen(corP) +1);
@@ -193,3 +197,4 @@ void desalocarRetangulo(RETANGULO r){
     free(rTemp);
 
 }
+

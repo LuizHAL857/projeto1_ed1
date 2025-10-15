@@ -4,8 +4,12 @@
 
 #include "texto.h"
 
+
+
+
 typedef struct {
 
+    
     int id;
     float x;
     float y;
@@ -13,14 +17,13 @@ typedef struct {
     char *corB;
     char *corP;
     char ancora;
-    char *ff;
-    char *fw;
-    char *fs;
+    
+   
 
 }texto;
 
 
-TEXTO criaTexto(int id, float x, float y, char *corB, char *corP, char ancora, char *txt, char *ff, char *fw, char *fs){
+TEXTO criaTexto(int id, float x, float y, char *corB, char *corP, char ancora, char *txt){
 
     texto* t = (texto*) malloc(sizeof(texto));
 
@@ -28,6 +31,8 @@ TEXTO criaTexto(int id, float x, float y, char *corB, char *corP, char ancora, c
     t->x = x;
     t->y = y;
     t->ancora = ancora;
+   
+  
 
     t->corB =(char*)malloc(sizeof(char) * strlen(corB)+1);
 
@@ -59,35 +64,6 @@ TEXTO criaTexto(int id, float x, float y, char *corB, char *corP, char ancora, c
 
     strcpy(t->txt, txt);
 
-    t->ff =(char*)malloc(sizeof(char) * strlen(ff)+1);
-
-    if(t->ff == NULL){
-
-        printf("Erro de alocação");
-        exit(1);
-    }
-
-    strcpy(t->ff, ff);
-
-    t->fw =(char*)malloc(sizeof(char) * strlen(fw)+1);
-
-    if(t->fw == NULL){
-
-        printf("Erro de alocação");
-        exit(1);
-    }
-
-    strcpy(t->fw, fw);
-
-    t->fs =(char*)malloc(sizeof(char) * strlen(fs)+1);
-
-    if(t->fs == NULL){
-
-        printf("Erro de alocação");
-        exit(1);
-    }
-
-    strcpy(t->fs, fs);
 
     return t;
 }
@@ -142,26 +118,8 @@ char* getTxtTexto(TEXTO t){
     return tTemp->txt;
 }
 
-char* getFFTexto(TEXTO t){
 
-    texto *tTemp = ((texto*)t);
 
-    return tTemp->ff;
-}
-
-char* getFWTexto(TEXTO t){
-
-    texto *tTemp = ((texto*)t);
-
-    return tTemp->fw;
-}
-
-char* getFSTexto(TEXTO t){
-
-    texto *tTemp = ((texto*)t);
-
-    return tTemp->fs;
-}
 
 
 float getComprimentoTexto(TEXTO t){
@@ -320,49 +278,7 @@ void setTxtTexto(TEXTO t, char *txt){
     strcpy(tTemp->txt, txt);
 }
 
-void setFFTexto(TEXTO t, char* ff) {
 
-    texto* tTemp = (texto*)t;
-    free(tTemp->ff);
-
-    tTemp->ff = (char*)malloc(strlen(ff) + 1);
-    if (tTemp->ff == NULL) {
-        printf("Erro ao alocar memória \n");
-        exit(1);
-    }
-
-    strcpy(tTemp->ff, ff);
-}
-
-void setFWTexto(TEXTO t, char* fw) {
-
-    texto* tTemp = (texto*)t;
-    free(tTemp->fw);
-
-    tTemp->fw = (char*)malloc(strlen(fw) + 1);
-
-    if (tTemp->fw == NULL) {
-        printf("Erro ao alocar memória ");
-        exit(1);
-    }
-
-    strcpy(tTemp->fw, fw);
-}
-
-void setFSTexto(TEXTO t, char* fs) {
-
-    texto* tTemp = (texto*)t;
-    free(tTemp->fs);
-
-    tTemp->fs = (char*)malloc(strlen(fs) + 1);
-
-    if (tTemp->fs == NULL) {
-        printf("Erro ao alocar memória \n");
-        exit(1);
-    }
-
-    strcpy(tTemp->fs, fs);
-}
 
 void desalocaTexto(TEXTO t){
 
@@ -371,10 +287,10 @@ void desalocaTexto(TEXTO t){
     free(tTemp->txt);
     free(tTemp->corB);
     free(tTemp->corP);
-    free(tTemp->ff);
-    free(tTemp->fw);
-    free(tTemp->fs);
+ 
 
     free(tTemp);
 
 }
+
+

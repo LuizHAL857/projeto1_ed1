@@ -42,7 +42,7 @@
   * 
   * @return Ponteiro para o TEXTO criado.
   */
- TEXTO criaTexto(int id, float x, float y, char* corB, char* corP, char ancora, char* txt, char* ff, char* fw, char* fs);
+ TEXTO criaTexto(int id, float x, float y, char* corB, char* corP, char ancora, char* txt);
  
 
  
@@ -81,22 +81,7 @@
   */
  char* getTxtTexto(TEXTO t);
  
- /**
-  * @brief Obtém a família da fonte do texto.
-  */
- char* getFFTexto(TEXTO t);
  
- /**
-  * @brief Obtém o peso da fonte do texto.
-  */
- char* getFWTexto(TEXTO t);
- 
- /**
-  * @brief Obtém o tamanho da fonte 
-  */
- char* getFSTexto(TEXTO t);
- 
-
  
  /**
   * @brief Obtém a coordenada X inicial do texto
@@ -146,21 +131,6 @@
   */
  void setTxtTexto(TEXTO t, char* txt);
  
- /**
-  * @brief Define a família da fonte do texto.
-  */
- void setFFTexto(TEXTO t, char* ff);
- 
- /**
-  * @brief Define o peso da fonte.
-  */
- void setFWTexto(TEXTO t, char* fw);
- 
- /**
-  * @brief Define o tamanho da fonte 
-  */
- void setFSTexto(TEXTO t, char* fs);
- 
  
  /**
   * @brief Retorna o comprimento de linha do texto conforme o especificado (10 * número de caracteres)
@@ -178,6 +148,9 @@
   * @brief Libera a memória alocada para o objeto TEXTO.
   */
  void desalocaTexto(TEXTO t);
+
+
+
  
  #endif 
  
