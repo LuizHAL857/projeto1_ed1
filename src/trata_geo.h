@@ -40,7 +40,7 @@ Chao executa_comando_geo(DadosDoArquivo fileData, char *caminho_output, const ch
  * @brief Retorna a fila contendo todas as formas geométricas criadas no contexto `Chao`.
  * 
  * Essa fila pode ser usada para processamento adicional ou visualização das formas
- * fora do módulo `trata_geo`. As formas dentro da fila são do tipo `Forma_t *`.
+ * fora do módulo `trata_geo`.
  * 
  * @param chao Contexto de execução retornado por `executa_comando_geo`.
  * @return Fila com os elementos gráficos processados.

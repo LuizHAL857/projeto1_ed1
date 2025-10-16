@@ -9,9 +9,11 @@
 #include "text_style.h"
 #include <stdio.h>
 #include <string.h>
-#include "formas.h"
 
 
+enum TipoForma{ CIRCLE, RECTANGLE, LINE, TEXT, TEXT_STYLE };
+
+typedef enum TipoForma TipoForma;
 
 typedef struct 
 {
@@ -106,7 +108,7 @@ void desaloca_geo(Chao chao){
     desalocaFila(chao_t->fila_svg);
 
     while(!pilhaVazia(chao_t->pilha_para_free)){
-
+      
         Forma_t  *forma = popPilha(chao_t->pilha_para_free);
 
         
