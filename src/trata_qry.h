@@ -5,8 +5,8 @@
 
 typedef void *Qry;
 
-Qry executa_comando_qry(DadosDoArquivo dados_qry, DadosDoArquivo dados_geo,
-                          Chao chao, const char *caminho_output);
+Qry executa_qry(DadosDoArquivo dadosQry, DadosDoArquivo dadosGeo, Chao chao, const char *caminho_output);
+
 
 void desaloca_qry(Qry qry);
 
