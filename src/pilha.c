@@ -1,6 +1,6 @@
 #include "pilha.h"
 #include <stdio.h>
-
+#include <stdlib.h>
 
 typedef struct NoPilha {
     void *conteudo;
@@ -72,6 +72,66 @@ void* topoPilha(Pilha pilha) {
     return p->topo->conteudo;
 }
 
+
+
+ void *pilhaElemento(Pilha pilha, int id) {
+
+
+    if (pilha == NULL || pilhaVazia(pilha) || id < 0) {
+  
+  
+      return NULL;
+  
+  
+    }
+  
+  
+  
+  
+  
+    stPilha *p = (struct stPilha *)pilha;
+  
+  
+    if (id >= p->tamanho) {
+  
+  
+      return NULL;
+  
+  
+    }
+  
+  
+  
+  
+  
+    NoPilha *atual = p->topo;
+  
+  
+    for (int i = 0; i < id; i++) {
+  
+  
+      if (atual == NULL) {
+  
+  
+        return NULL;
+  
+  
+      }
+  
+  
+      atual = atual->baixo;
+  
+  
+    }
+  
+  
+  
+  
+  
+    return atual->conteudo;
+  
+  
+  }
 
 bool pilhaVazia(Pilha pilha) {
     if (!pilha) return true;

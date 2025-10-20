@@ -24,7 +24,7 @@
   * @param caminhoArquivo Caminho completo para o arquivo.
   * @return Instância de DadosDoArquivo ou NULL em caso de erro.
   */
- DadosDoArquivo criar_dados_arquivo(const char *caminhoArquivo);
+ DadosDoArquivo criar_dados_arquivo( char *caminhoArquivo);
  
  /**
   * Destroi uma instância de DadosDoArquivo e libera toda a memória associada.
@@ -39,7 +39,7 @@
   * @param dadosArquivo Instância de DadosDoArquivo.
   * @return Ponteiro para string com o caminho do arquivo.
   */
- const char *obter_caminho_arquivo(const DadosDoArquivo dadosArquivo);
+  char *obter_caminho_arquivo( DadosDoArquivo dadosArquivo);
  
  /**
   * Obtém o nome do arquivo (sem o caminho).
@@ -47,7 +47,7 @@
   * @param dadosArquivo Instância de DadosDoArquivo.
   * @return Ponteiro para string com o nome do arquivo.
   */
- const char *obter_nome_arquivo(const DadosDoArquivo dadosArquivo);
+  char *obter_nome_arquivo( DadosDoArquivo dadosArquivo);
  
  /**
   * Obtém a fila com as linhas do arquivo.
@@ -55,7 +55,7 @@
   * @param dadosArquivo Instância de DadosDoArquivo.
   * @return Fila contendo as linhas do arquivo.
   */
- Fila obter_fila_linhas(const DadosDoArquivo dadosArquivo);
+ Fila obter_fila_linhas( DadosDoArquivo dadosArquivo);
  
  #endif // DADOS_ARQUIVO_H
  

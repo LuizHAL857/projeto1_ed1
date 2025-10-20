@@ -34,7 +34,7 @@ typedef void* Chao;
  * @return Um ponteiro opaco para o contexto (Chao) contendo todas as formas e estruturas alocadas.
  *         Esse ponteiro deve ser usado para operações posteriores e precisa ser desalocado com `desaloca_geo`.
  */
-Chao executa_comando_geo(DadosDoArquivo fileData, char *caminho_output, const char *sufixo_comando);
+Chao executa_comando_geo(DadosDoArquivo fileData, char *caminho_output,  char *sufixo_comando);
 
 /**
  * @brief Retorna a fila contendo todas as formas geométricas criadas no contexto `Chao`.
@@ -56,5 +56,19 @@ Fila get_fila_chao(Chao chao);
  * @param chao Contexto a ser desalocado, retornado por `executa_comando_geo`.
  */
 void desaloca_geo(Chao chao);
+
+/** *
+
+
+    Obtem a pilha para liberar formas do chão
+
+
+    @param Chao chao- O chão do qual se vai obter a pilha para liberar formas
+
+    @return A pilha para liberar formas
+
+
+*/
+Pilha obtem_pilha_para_desalocar(Chao chao); 
 
 #endif 

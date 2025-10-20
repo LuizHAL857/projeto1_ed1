@@ -9,11 +9,10 @@
 #include "text_style.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+#include "formas.h"
 
 
-enum TipoForma{ CIRCLE, RECTANGLE, LINE, TEXT, TEXT_STYLE };
-
-typedef enum TipoForma TipoForma;
 
 typedef struct 
 {
@@ -37,9 +36,9 @@ static void executa_comando_circulo(Chao_t *chao);
 static void executa_comando_linha(Chao_t *chao);
 static void executa_comando_texto(Chao_t *chao);
 static void executa_comando_textstyle(Chao_t *chao);
-static void cria_fila_svg(Chao_t *chao,  char* caminho_output, DadosDoArquivo fileData, const char *sufixo_comando);
+static void cria_fila_svg(Chao_t *chao,  char* caminho_output, DadosDoArquivo fileData,  char *sufixo_comando);
 
-Chao executa_comando_geo(DadosDoArquivo fileData,  char *caminho_output, const char *sufixo_comando){
+Chao executa_comando_geo(DadosDoArquivo fileData,  char *caminho_output,  char *sufixo_comando){
 
 
     Chao_t *chao = malloc(sizeof(Chao_t));
@@ -138,6 +137,18 @@ void desaloca_geo(Chao chao){
 
 }
 
+Pilha obtem_pilha_para_desalocar(Chao chao) {
+
+
+  Chao_t *chao_t = (Chao_t *)chao;
+
+
+  return chao_t->pilha_para_free;
+
+
+}
+
+//Funções Privadas
 static void executa_comando_circulo(Chao_t *chao){
 
 
@@ -261,8 +272,8 @@ static void executa_comando_retangulo(Chao_t *chao) {
 
 
 
-static void cria_fila_svg(Chao_t *chao, char* caminho_output, DadosDoArquivo fileData, const char *sufixo_comando){
-    const char *nome_arquivo_original = obter_nome_arquivo(fileData);
+static void cria_fila_svg(Chao_t *chao, char* caminho_output, DadosDoArquivo fileData,  char *sufixo_comando){
+     char *nome_arquivo_original = obter_nome_arquivo(fileData);
     size_t name_len = strlen(nome_arquivo_original);
     char *nome_arquivo = malloc(name_len + 1);
     
@@ -294,7 +305,7 @@ static void cria_fila_svg(Chao_t *chao, char* caminho_output, DadosDoArquivo fil
     return;
     }
 
-    // Use snprintf for safe string construction
+    // Use snprintf for safe string ruction
     int result = snprintf(caminho_output_arquivo, total_len, "%s/%s.svg",
     caminho_output, nome_arquivo);
     if (result < 0 || (size_t)result >= total_len) {
@@ -350,7 +361,7 @@ static void cria_fila_svg(Chao_t *chao, char* caminho_output, DadosDoArquivo fil
     } else if (forma->tipo == TEXT) {
     TEXTO t = (TEXTO)forma->data;
     char ancora = getAncoraTexto(t);
-    const char *texto_ancora = "start"; // default
+     char *texto_ancora = "start"; 
 
   
     if (ancora == 'm' || ancora == 'M') {

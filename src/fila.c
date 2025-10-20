@@ -1,7 +1,7 @@
 #include "fila.h"
 #include <stdio.h>
+#include <stdlib.h>
 
-// Estrutura de um nó da fila
 typedef struct NoFila {
     void *conteudo;
     struct NoFila *prox;

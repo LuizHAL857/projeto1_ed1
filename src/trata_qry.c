@@ -11,13 +11,8 @@
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
-
-
-enum TipoForma{ CIRCLE, RECTANGLE, LINE, TEXT, TEXT_STYLE };
-
-
-
-typedef enum TipoForma TipoForma;
+#include "cor_complementar.h"
+#include "formas.h"
 
 typedef enum { ARRAY_DISPARADORES_FREE, ARRAY_CARREGADORES_FREE, FORMA_POSICAO_FREE, PILHA_FREE} TipoFree;
 
@@ -120,34 +115,34 @@ static int encontra_disparador_por_id(Disparador_t **disparadores, int contagem_
 
 
 static void realiza_shift(Disparador_t **disparadores, int contagem_disparadores,  int DisparadorID, 
-      const char *direcao,  int qtd, Carregador_t *carregadores, int contagem_carregadores);
+       char *direcao,  int qtd, Carregador_t *carregadores, int contagem_carregadores);
 
 
-static void realiza_disparo(Disparador_t **disparadores, int contagem_disparadores, int DisparadorID, double dx, double dy, const char *annotate, 
+static void realiza_disparo(Disparador_t **disparadores, int contagem_disparadores, int DisparadorID, double dx, double dy,  char *annotate, 
     Pilha arena, Pilha pilha_para_free);
 
 // Funções auxiliares para comando calc
 static double area_forma(TipoForma tipo, void *dados_forma);
 
 
-static BoundingBox cria_boundingbox_forma(const PosicaoFormaArena_t *P);
+static BoundingBox cria_boundingbox_forma( PosicaoFormaArena_t *P);
 
 static bool sobreposicao_boundingbox(BoundingBox a, BoundingBox b);
 
-static bool sobreposicao_formas(const PosicaoFormaArena_t *a, const PosicaoFormaArena_t *b);
+static bool sobreposicao_formas( PosicaoFormaArena_t *a,  PosicaoFormaArena_t *b);
 
 
 static Forma_t *encapsula_forma(TipoForma tipo, void *data);
 
 
-static Forma_t *clonaForma_corB(Forma_t *forma_original,  const char *novaCorB);
+static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB);
 
 static Forma_t *clonaForma_coresInvertidas(Forma_t *forma_original);
 
 // Funções para auxiliar clonagem
 static Forma_t *clona_posicao(Forma_t *forma_original, double x, double y, Chao chao);
 
-static Forma_t *clone_posicao_corB(Forma_t *forma_original, const char *novaCorB, double x, double y, Chao chao);
+static Forma_t *clone_posicao_corB(Forma_t *forma_original,  char *novaCorB, double x, double y, Chao chao);
                                                     
 static Forma_t *clona_posicao_coresInvertidas(Forma_t *forma_original, double x, double y, Chao chao);
                                                       
@@ -155,185 +150,99 @@ static void desaloca_forma(Forma_t *forma);
 
 
 // Função para escrever o arquivo svg
-static void cria_svg_com_resultado(DadosDoArquivo dadosQry, DadosDoArquivo dadosGeo,  Chao chao, Pilha arena, const char *caminho_output);
+static void cria_svg_com_resultado(DadosDoArquivo dadosQry, DadosDoArquivo dadosGeo,  Chao chao, Pilha arena,  char *caminho_output);
 
-Qry executa_qry(DadosDoArquivo dadosQry, DadosDoArquivo dadosGeo, Chao chao, const char *caminho_output) {
+Qry executa_qry(DadosDoArquivo dados_qry, DadosDoArquivo dados_geo, Chao chao,  char *output_path) {
 
-  Qry_t *qry = malloc(sizeof(Qry_t));
-  if (qry == NULL) {
-    printf("Erro na alocação do qry\n");
+    Qry_t *qry = malloc(sizeof(Qry_t));
+    if (qry == NULL) {
+    printf("Error: Failed to allocate memory for Qry\n");
     exit(1);
-  }
-  qry->arena = criaPilha();
-  qry->pilha_para_free = criaPilha();
+    }
+    qry->arena = criaPilha();
+    qry->pilha_para_free = criaPilha();
 
-  
+    // Note: qry should NOT be added to stackToFree as it causes premature freeing
 
+    Disparador_t *disparadores = NULL;
+    int disparadorCount = 0;
+    Carregador_t *carregadores = NULL;
+    int carregadorCount = 0;
 
-  Disparador_t *disparadores = NULL;
-
-  int contagem_disparadores = 0;
-
-  Carregador_t *carregadores = NULL;
-
-  int contagem_carregadores = 0;
-   // Abrir arquivo .txt com o mesmo nome-base do SVG de saída, mas extensão .txt
-
-
-   size_t geo_len = strlen(obter_nome_arquivo(dadosGeo));
-
-
-   size_t qry_len = strlen(obter_nome_arquivo(dadosQry));
- 
- 
-   char *geo_base = malloc(geo_len + 1);
- 
- 
-   char *qry_base = malloc(qry_len + 1);
- 
- 
-   if (geo_base == NULL || qry_base == NULL) {
- 
-    printf("Erro na alocação do nome do arquivo\n");
- 
+    // Abrir arquivo .txt com o mesmo nome-base do SVG de saída, mas extensão .txt
+    size_t geo_len = strlen(obter_nome_arquivo(dados_geo));
+    size_t qry_len = strlen(obter_nome_arquivo(dados_qry));
+    char *geo_base = malloc(geo_len + 1);
+    char *qry_base = malloc(qry_len + 1);
+    if (geo_base == NULL || qry_base == NULL) {
+    printf("Erro de alocação pro nome do arquivo\n");
     free(geo_base);
- 
     free(qry_base);
     return NULL;
- 
- 
-   }
- 
- 
-   strcpy(geo_base, obter_nome_arquivo(dadosGeo));
- 
- 
-   strcpy(qry_base, obter_nome_arquivo(dadosQry));
- 
- 
-   strtok(geo_base, ".");
- 
- 
-   strtok(qry_base, ".");
- 
- 
-   size_t caminho_len = strlen(caminho_output);
- 
- 
-  
- 
- 
-   size_t nome_processsado_len = strlen(geo_base) + 1 + strlen(qry_base);
- 
- 
-   size_t total_len = caminho_len + 1 + nome_processsado_len + 4 + 1;  
- 
-   char *caminho_saida_txt = malloc(total_len);
- 
- 
-   if (caminho_saida_txt == NULL) {
- 
- 
-     printf("Erro de alocação\n");
- 
- 
-     free(geo_base);
- 
- 
-     free(qry_base);
- 
- 
-     return NULL;
- 
- 
-   }
- 
- 
-   int res = snprintf(caminho_saida_txt, total_len, "%s/%s-%s.txt", caminho_output, geo_base, qry_base);
- 
- 
-   if (res < 0 || (size_t)res >= total_len) {
- 
- 
-     printf("Erro:construção de caminho falhou\n");
- 
- 
-     free(caminho_saida_txt);
- 
- 
-     free(geo_base);
- 
- 
-     free(qry_base);
- 
- 
-     return NULL;
- 
- 
-   }
- 
- 
-   FILE *ArqTxt = fopen(caminho_saida_txt, "w");
- 
- 
-   free(geo_base);
- 
- 
-   free(qry_base);
- 
- 
-   free(caminho_saida_txt);
+    }
+    strcpy(geo_base, obter_nome_arquivo(dados_geo));
+    strcpy(qry_base, obter_nome_arquivo(dados_qry));
+    strtok(geo_base, ".");
+    strtok(qry_base, ".");
+    size_t path_len = strlen(output_path);
+    // geoBase-qryBase.txt
+    size_t nome_processado_len = strlen(geo_base) + 1 + strlen(qry_base);
+    size_t total_len = path_len + 1 + nome_processado_len + 4 + 1; // +4 for ".txt"
+    char *output_txt_path = malloc(total_len);
+    if (output_txt_path == NULL) {
+    printf("Erro de alocação\n");
+    free(geo_base);
+    free(qry_base);
+    return NULL;
+    }
+    int res = snprintf(output_txt_path, total_len, "%s/%s-%s.txt", output_path,
+    geo_base, qry_base);
+    if (res < 0 || (size_t)res >= total_len) {
+    printf("Erro na construção de caminho\n");
+    free(output_txt_path);
+    free(geo_base);
+    free(qry_base);
+    return NULL;
+    }
+    FILE *txtFile = fopen(output_txt_path, "w");
+    free(geo_base);
+    free(qry_base);
+    free(output_txt_path);
 
-  while (!filaVazia(obter_fila_linhas(dadosQry))) {
-    char *linha = (char *)dequeueFila(obter_fila_linhas(dadosQry));
+    while (!filaVazia(obter_fila_linhas(dados_qry))) {
+    char *line = (char *)dequeueFila(obter_fila_linhas(dados_qry));
+    char *command = strtok(line, " \t\r\n");
 
-    char *comando = strtok(linha, " \t\r\n");
-
-    if (comando == NULL || *comando == '\0') {
-
-      continue;
-
+    if (command == NULL || *command == '\0') {
+    continue;
     }
 
-    if (strcmp(comando, "pd") == 0) {
+    if (strcmp(command, "pd") == 0) {
+    executa_pd(&disparadores, &disparadorCount, qry->pilha_para_free);
+    } else if (strcmp(command, "lc") == 0) {
+    executa_lc(&carregadores, &carregadorCount, chao, qry->pilha_para_free, txtFile);
+    } else if (strcmp(command, "atch") == 0) {
+    executa_atch(&carregadores, &carregadorCount, &disparadores, &disparadorCount, qry->pilha_para_free);
+    } else if (strcmp(command, "shft") == 0) {
+    executa_shft(&disparadores, &disparadorCount, carregadores, &carregadorCount, txtFile);
+    } else if (strcmp(command, "dsp") == 0) {
+    executa_dsp(&disparadores, &disparadorCount, qry->arena, qry->pilha_para_free, txtFile);
 
-      executa_pd(&disparadores, &contagem_disparadores, qry->pilha_para_free);
-
-    } else if (strcmp(comando, "lc") == 0) {
-
-      executa_lc(&carregadores, &contagem_carregadores, chao, qry->pilha_para_free, ArqTxt);
-
-
-    } else if (strcmp(comando, "atch") == 0) {
-
-      executa_atch(&carregadores, &contagem_carregadores, &disparadores, &contagem_disparadores, qry->pilha_para_free);
-
-    } else if (strcmp(comando, "shft") == 0) {
-
-      executa_shft(&disparadores, &contagem_disparadores, carregadores, contagem_carregadores, ArqTxt);
-
-    } else if (strcmp(comando, "dsp") == 0) {
-
-      executa_dsp(&disparadores, &contagem_disparadores, qry->arena, qry->pilha_para_free, ArqTxt);
-
-    } else if (strcmp(comando, "rjd") == 0) {
-
-      executa_rjd(&disparadores, &contagem_disparadores, qry->pilha_para_free, qry->arena, carregadores, &contagem_carregadores, ArqTxt);
-
-    } else if (strcmp(comando, "calc") == 0) {
-
-      executa_calc(qry->arena, chao, ArqTxt);
-
+    } else if (strcmp(command, "rjd") == 0) {
+    executa_rjd(&disparadores, &disparadorCount, qry->pilha_para_free, qry->arena, carregadores, &carregadorCount, txtFile);
+    } else if (strcmp(command, "calc") == 0) {
+    executa_calc(qry->arena, chao, txtFile);
     } else
-      printf("Comando desconhecido: %s\n", comando);
-  }
+    printf("Unknown command: %s\n", command);
+    }
 
- 
-  cria_svg_com_resultado(dadosQry, dadosGeo, chao, qry->arena,
-                       caminho_output);
+    // After processing all commands, emit final SVG with remaining ground shapes
+    // and visual annotations derived from the arena
+    cria_svg_com_resultado(dados_qry, dados_geo, chao, qry->arena,
+    output_path);
 
-                       return (Qry)qry;
-
+    fclose(txtFile);
+    return (Qry)qry;
 }
 
 
@@ -366,7 +275,7 @@ void desaloca_qry(Qry qry) {
             desalocaPilha(*p);
 
           }
-          free(o->pointer);
+       //   free(o->pointer);
 
           break;
         }
@@ -441,117 +350,94 @@ static void executa_pd(Disparador_t **disparadores, int *contagem_disparadores, 
 
 }
 
-static void executa_lc(Carregador_t **carregadores, int *contagem_carregadores, Chao chao, Pilha pilha_para_free,  FILE *txtFile) {
-    char *id = strtok(NULL, " ");
-    char *primeirasFormas = strtok(NULL, " ");
+static void executa_lc(Carregador_t **loaders, int *loadersCount, Chao ground, Pilha pilha_para_free, FILE *txtFile) {
+    char *identifier = strtok(NULL, " ");
+    char *primeirasXFormas = strtok(NULL, " ");
 
-    int CarregadorId = atoi(id);
-    int nova_qtd_formas = atoi(primeirasFormas);
+    int loaderId = atoi(identifier);
+    int nova_quantia_formas= atoi(primeirasXFormas);
 
     fprintf(txtFile, "[lc]\n");
-    fprintf(txtFile, "\tCarregador ID: %d\n", CarregadorId);
-    fprintf(txtFile, "\tNova quantidade de formas: %d\n", nova_qtd_formas);
+    fprintf(txtFile, "\tCarregador ID: %d\n", loaderId);
+    fprintf(txtFile, "\tNova quantia de formas: %d\n", nova_quantia_formas);
 
     
-    int id_carregador_existente = -1;
-    for (int i = 0; i < *contagem_carregadores; i++) {
-
-        if ((*carregadores)[i].id == CarregadorId) {
-
-            id_carregador_existente = i;
-            break;
-
-        }
+    int existingLoaderIndex = -1;
+    for (int i = 0; i < *loadersCount; i++) {
+    if ((*loaders)[i].id == loaderId) {
+    existingLoaderIndex = i;
+    break;
+    }
     }
 
-    if (id_carregador_existente == -1) {
+    if (existingLoaderIndex == -1) {
     
-    *contagem_carregadores += 1;
-    *carregadores = realloc(*carregadores, *contagem_carregadores * sizeof(Carregador_t));
-    if (*carregadores == NULL) {
-            printf("Erro na alocação dos carregadores\n");
-            exit(1);
+    *loadersCount += 1;
+    *loaders = realloc(*loaders, *loadersCount * sizeof(Carregador_t));
+    if (*loaders == NULL) {
+    printf("Erro na alocação dos carregadores\n");
+    exit(1);
     }
 
-   
+    
     bool carregadores_ja_marcados = false;
-    int tamanhoPilha = tamanho_pilha(pilha_para_free);
-    for (int i = 0; i < tamanhoPilha; i++) {
-
-        ObjetoFree *objeto = (ObjetoFree *)pilhaElemento(pilha_para_free, i);
-
-        if (objeto != NULL && objeto->tipo == ARRAY_CARREGADORES_FREE) {
-           
-            objeto->pointer = *carregadores;
-            carregadores_ja_marcados = true;
-            break;
-        }
-
+    int pilha_size_count = tamanhoPilha(pilha_para_free);
+    for (int i = 0; i < pilha_size_count; i++) {
+    ObjetoFree *existing_item = (ObjetoFree *)pilhaElemento(pilha_para_free, i);
+    if (existing_item != NULL && existing_item->tipo == ARRAY_CARREGADORES_FREE) {
+    
+    existing_item->pointer = *loaders;
+    carregadores_ja_marcados = true;
+    break;
+    }
     }
 
     if (!carregadores_ja_marcados) {
-
-        ObjetoFree *carregador_objeto = malloc(sizeof(ObjetoFree));
-
-        if (carregador_objeto != NULL) {
-
-            carregador_objeto->pointer = *carregadores;
-            carregador_objeto->tipo = ARRAY_CARREGADORES_FREE;
-            pushPilha(pilha_para_free, carregador_objeto);
-
-        }
+    ObjetoFree *loaders_item = malloc(sizeof(ObjetoFree));
+    if (loaders_item != NULL) {
+    loaders_item->pointer = *loaders;
+    loaders_item->tipo = ARRAY_CARREGADORES_FREE;
+    pushPilha(pilha_para_free, loaders_item);
     }
-    (*carregadores)[*contagem_carregadores - 1] = (Carregador_t){.id = CarregadorId, .formas = NULL};
-
-    id_carregador_existente = *contagem_carregadores - 1;
-
+    }
+    (*loaders)[*loadersCount - 1] = (Carregador_t){.id = loaderId, .formas = NULL};
+    existingLoaderIndex = *loadersCount - 1;
     }
 
    
-    if ((*carregadores)[id_carregador_existente].formas == NULL) {
-
-        (*carregadores)[id_carregador_existente].formas = malloc(sizeof(Pilha));
-        if ((*carregadores)[id_carregador_existente].formas == NULL) {
-
-            printf("Erro na alocação de memória na pilha do carregador\n");
-            exit(1);
-        }
-
-        
-        ObjetoFree *pilha_item = malloc(sizeof(ObjetoFree));
-
-        if (pilha_item != NULL) {
-
-            pilha_item->pointer = (*carregadores)[id_carregador_existente].formas;
-            pilha_item->tipo = PILHA_FREE;
-            pushPilha(pilha_para_free, pilha_item);
-
-            }
-            
-            *(*carregadores)[id_carregador_existente].formas = criaPilha();
-            if (*(*carregadores)[id_carregador_existente].formas == NULL) {
-
-            printf("Erro na criação da pilha dos carregadores\n");
-
-            exit(1);
-        }
+    if ((*loaders)[existingLoaderIndex].formas == NULL) {
+    (*loaders)[existingLoaderIndex].formas = malloc(sizeof(Pilha));
+    if ((*loaders)[existingLoaderIndex].formas == NULL) {
+    printf("Erro de alocação nos carregadores\n");
+    exit(1);
     }
 
-   
-    for (int i = 0; i < nova_qtd_formas; i++) {
+    
+    ObjetoFree *stack_item = malloc(sizeof(ObjetoFree));
+    if (stack_item != NULL) {
+    stack_item->pointer = (*loaders)[existingLoaderIndex].formas;
+    stack_item->tipo = PILHA_FREE;
+    pushPilha(pilha_para_free, stack_item);
+    }
+    *(*loaders)[existingLoaderIndex].formas = criaPilha();
+    if (*(*loaders)[existingLoaderIndex].formas == NULL) {
+    printf("Erro na alocação de carregadores\n");
+    exit(1);
+    }
+    }
 
-        Forma_t *forma = dequeueFila(obtem_pilha_para_desalocar(chao));
-
-        if (forma != NULL) {
-
-            if (!pushPilha(*(*carregadores)[id_carregador_existente].formas, forma)) {
-
-                printf("Erro em colocar forma no carregador\n");
-                exit(1);
-            }
-        }
+    
+    for (int i = 0; i < nova_quantia_formas; i++) {
+    Forma_t *forma = dequeueFila(get_fila_chao(ground));
+    if (forma != NULL) {
+    if (!pushPilha(*(*loaders)[existingLoaderIndex].formas, forma)) {
+    printf("Error na alocação de carregadores\n");
+    exit(1);
+    }
+    }
     }
 }
+
 
 static void executa_atch(Carregador_t **carregadores, int *contagem_carregadores,
       Disparador_t **disparadores, int *contagem_disparadores,
@@ -730,7 +616,7 @@ static void executa_atch(Carregador_t **carregadores, int *contagem_carregadores
 
 
 static void realiza_shift(Disparador_t **disparadores, int contagem_disparadores,  int DisparadorID, 
-        const char *direcao,  int qtd, Carregador_t *carregadores, int contagem_carregadores){
+         char *direcao,  int qtd, Carregador_t *carregadores, int contagem_carregadores){
 
     int indice_disparador = encontra_disparador_por_id(disparadores, contagem_disparadores, DisparadorID);
 
@@ -820,7 +706,7 @@ static void executa_shft(Disparador_t **disparadores, int *contagem_disparadores
     char *botao_esquerdo_ou_direito = strtok(NULL, " ");
     char *qtdPressionada = strtok(NULL, " ");
 
-    fprintf(txt, "[shft]");
+    fprintf(txt, "shft");
 
     int disparadorIDInt = atoi(disparadorID);
     int qtdPressionadaInt = atoi(qtdPressionada);
@@ -834,7 +720,7 @@ static void executa_shft(Disparador_t **disparadores, int *contagem_disparadores
     realiza_shift(disparadores, *contagem_disparadores, disparadorIDInt, botao_esquerdo_ou_direito, qtdPressionadaInt, carregadores, *contagem_carregadores);
 }
 
-static void realiza_disparo(Disparador_t **disparadores, int contagem_disparadores, int DisparadorID, double dx, double dy, const char *annotate, 
+static void realiza_disparo(Disparador_t **disparadores, int contagem_disparadores, int DisparadorID, double dx, double dy,  char *annotate, 
                             Pilha arena, Pilha pilha_para_free){
 
     int indice_disparador = encontra_disparador_por_id(disparadores, contagem_disparadores, DisparadorID);
@@ -858,7 +744,7 @@ static void realiza_disparo(Disparador_t **disparadores, int contagem_disparador
 
     Forma_t *forma = (Forma_t *)disparador->posicao_disparo;
 
-    TipoForma tipo_forma = forma->tipo;
+  //  TipoForma tipo_forma = forma->tipo;
 
     
     PosicaoFormaArena_t *posicao_forma_arena = malloc(sizeof(PosicaoFormaArena_t));
@@ -900,7 +786,7 @@ static void executa_dsp(Disparador_t **disparadores, int *contagem_disparadores,
     double dxDouble = atof(dx);
     double dyDouble = atof(dy);
 
-    fprintf(txt, "[dsp]\n");
+    fprintf(txt, "dsp\n");
     fprintf(txt, "\tDisparador ID: %d\n", disparadorIDInt);
     fprintf(txt, "\tDX: %f\n", dxDouble);
     fprintf(txt, "\tDY: %f\n", dyDouble);
@@ -992,7 +878,7 @@ static void executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
 
         int qtd = 1;
 
-        fprintf(txt, "[rjd]\n");
+        fprintf(txt, "rjd\n");
         fprintf(txt, "\tDisparador ID: %d\n", disparadorIdInt);
         fprintf(txt, "\tBotão: %s\n", botao_esquerdo_ou_direiro);
         fprintf(txt, "\tDX: %f\n", dxDouble);
@@ -1015,134 +901,117 @@ static void executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
 
 
 
-static void executa_calc(Pilha arena, Chao chao, FILE *txt){
-    // deve ser processado em ordem de lançamento
 
-    Pilha temp = criaPilha();
-    while (!pilhaVazia(arena)) {
+void executa_calc(Pilha arena, Chao chao, FILE *txtFile) {
+  
+  Pilha temp = criaPilha();
+  while (!pilhaVazia(arena)) {
+    pushPilha(temp, popPilha(arena));
+  }
 
-        pushPilha(temp, popPilha(arena));
-    }
+  
+  double area_total_esmagada = 0.0;
 
-    // Calcula total esmagado
-
-    double area_esmagada_total = 0.0;
-
-    for (int i = 0; i < tamanhoPilha(temp); i++) {
-        PosicaoFormaArena_t *item = (PosicaoFormaArena_t *)pilhaElemento(temp, i);
-
-        if (item != NULL && item->isAnnotated) {
-             area_esmagada_total += area_forma(item->forma->tipo, item->forma->data);
-        }
-    }
-
+  
+  while (!pilhaVazia(temp)) {
+    PosicaoFormaArena_t *I = (PosicaoFormaArena_t *)popPilha(temp);
+    if (pilhaVazia(temp)) {
     
-    while (!pilhaVazia(temp)) {
+      Forma_t *Ipos = clona_posicao(I->forma, I->x, I->y, chao);
+      if (Ipos != NULL) {
+        enqueueFila(get_fila_chao(chao), Ipos);
+      }
+      continue;
+    }
+    PosicaoFormaArena_t *J = (PosicaoFormaArena_t *)popPilha(temp);
 
-        PosicaoFormaArena_t *I = (PosicaoFormaArena_t *)popPilha(temp);
-        
-        if (pilhaVazia(temp)) {
-        
-            Forma_t *PosI = clona_posicao(I->forma, I->x, I->y, chao);
+    bool overlap = sobreposicao_formas(I, J);
+    if (overlap) {
+      double areaI = area_forma(I->forma->tipo, I->forma->data);
+      double areaJ = area_forma(J->forma->tipo, J->forma->data);
+      
+      area_total_esmagada += (areaI < areaJ) ? areaI : areaJ;
 
-            if (PosI != NULL) {
-
-                enqueueFila(get_fila_chao(chao), PosI);
-            }
-            continue;
+      if (areaI < areaJ) {
+     
+        Forma_t *Jpos = clona_posicao(J->forma, J->x, J->y, chao);
+        if (Jpos != NULL) {
+          enqueueFila(get_fila_chao(chao), Jpos);
         }
-        PosicaoFormaArena_t *J = (PosicaoFormaArena_t *)popPilha(temp);
+      } else if (areaI >= areaJ) {
+        
+         char *fillColorI = NULL;
+        switch (I->forma->tipo) {
+        case CIRCLE:
+          fillColorI = getCorPCirculo((CIRCULO)I->forma->data);
+          break;
+        case RECTANGLE:
+          fillColorI =getCorPRetangulo((RETANGULO)I->forma->data);
+          break;
+        case TEXT:
+          fillColorI = getCorPTexto((TEXTO)I->forma->data);
+          break;
+        case LINE:
+        case TEXT_STYLE:
+          fillColorI = NULL;
+          break;
+        }
 
-
-        bool sobreposicao = sobreposicao_formas(I, J);
-
-        if (sobreposicao) {
-
-            double areaI = area_forma(I->forma->tipo, I->forma->data);
-            double areaJ = area_forma(J->forma->tipo, J->forma->data);
-
-            if (areaI < areaJ) {
-            
-            Forma_t *PosJ = clona_posicao(J->forma, J->x, J->y, chao);
-
-            if (PosJ != NULL) {
-                enqueueFila(get_fila_chao(chao), PosJ);
-
-            }
-            } else  {
-            
-            const char *CorPI = NULL;
-            switch (I->forma->tipo) {
-            case CIRCLE:
-                CorPI = getCorPCirculo((CIRCULO)I->forma->data);
-                break;
-                case RECTANGLE:
-                CorPI = getCorPRetangulo((RETANGULO)I->forma->data);
-                break;
-                case TEXT:
-                CorPI = getCorPTexto((TEXTO)I->forma->data);
-                break;
-                case LINE:
-                case TEXT_STYLE:
-                CorPI = NULL;
-                break;
-            }
-
-            
-            Forma_t *POSJini = NULL;
-            if (CorPI != NULL) {
-
-            POSJini = clone_posicao_corB(J->forma, CorPI,  J->x, J->y, chao);
-            } else {
-
-            POSJini = clona_posicao(J->forma, J->x, J->y, chao);
-
-            }
-
-           
-            Forma_t *PosI = clona_posicao(I->forma, I->x, I->y, chao);
-
-            if (PosI != NULL) {
-                enqueueFila(get_fila_chao(chao), PosI);
-
-            }
-            if (POSJini != NULL) {
-                enqueueFila(get_fila_chao(chao), POSJini);
-
-            }
-
-           
-            Forma_t *PosIClone = clona_posicao_coresInvertidas(I->forma, I->x, I->y, chao);
-
-            if (PosIClone != NULL) {
-
-                enqueueFila(get_fila_chao(chao), PosIClone);
-
-            }
-            } 
+        
+        Forma_t *JprimePos = NULL;
+        if (fillColorI != NULL) {
+          JprimePos = clone_posicao_corB(J->forma, fillColorI, J->x, J->y, chao);
         } else {
-        
-        Forma_t *PosI = clona_posicao(I->forma, I->x, I->y, chao);
-        Forma_t *PosJ = clona_posicao(J->forma, J->x, J->y, chao);
-
-        if (PosI != NULL) {
-            enqueueFila(get_fila_chao(chao), PosI);
-
+          JprimePos = clona_posicao(J->forma, J->x, J->y, chao);
         }
-        if (PosJ != NULL) {
-            enqueueFila(get_fila_chao(chao), PosJ);
 
+    
+        Forma_t *Ipos = clona_posicao(I->forma, I->x, I->y, chao);
+        if (Ipos != NULL) {
+          enqueueFila(get_fila_chao(chao), Ipos);
         }
+        if (JprimePos != NULL) {
+          enqueueFila(get_fila_chao(chao), JprimePos);
         }
+
+       
+        Forma_t *IclonePos = clona_posicao_coresInvertidas(I->forma, I->x, I->y, chao);
+        if (IclonePos != NULL) {
+          enqueueFila(get_fila_chao(chao), IclonePos);
+        }
+      } else {
+     
+        Forma_t *Ipos = clona_posicao(I->forma, I->x, I->y, chao);
+        Forma_t *Jpos = clona_posicao(J->forma, J->x, J->y, chao);
+        if (Ipos != NULL) {
+          enqueueFila(get_fila_chao(chao), Ipos);
+        }
+        if (Jpos != NULL) {
+          enqueueFila(get_fila_chao(chao), Jpos);
+        }
+      }
+    } else {
+      
+      Forma_t *Ipos = clona_posicao(I->forma, I->x, I->y, chao);
+      Forma_t *Jpos = clona_posicao(J->forma, J->x, J->y, chao);
+      if (Ipos != NULL) {
+        enqueueFila(get_fila_chao(chao), Ipos);
+      }
+      if (Jpos != NULL) {
+        enqueueFila(get_fila_chao(chao), Jpos);
+      }
     }
+  }
+
+  
+  fprintf(txtFile, "[calc]\n");
+  fprintf(txtFile, "\tResultado: %.2lf\n", area_total_esmagada);
+  fprintf(txtFile, "\n");
+
+  desalocaPilha(temp);
+}
 
     
-    fprintf(txt, "[calc]\n");
-    fprintf(txt, "\tResultado: %.2lf\n", area_esmagada_total);
-    fprintf(txt, "\n");
-    
-    desalocaPilha(temp);
-}
 
 static int encontra_disparador_por_id(Disparador_t **disparadores, int contagem_disparadores, int id){
 
@@ -1153,3 +1022,718 @@ static int encontra_disparador_por_id(Disparador_t **disparadores, int contagem_
     }
     return -1;
 }
+
+// =====================
+// Funções auxiliares
+// =====================
+
+static Forma_t *encapsula_forma(TipoForma tipo, void *data) {
+    Forma_t *f = (Forma_t *)malloc(sizeof(Forma_t));
+    if (f == NULL) {
+        printf("Erro na alocação de forma\n");
+        exit(1);
+    }
+    f->tipo = tipo;
+    f->data = data;
+
+    return f;
+}
+
+static double area_forma(TipoForma tipo, void *dados_forma) {
+
+    switch (tipo) {
+    case CIRCLE: {
+    double a = calculoAreaCirculo((CIRCULO)dados_forma);
+    return a;
+
+    }
+    case RECTANGLE: {
+
+        double a = calculoAreaRetangulo((RETANGULO)dados_forma);
+        return a;
+    }
+    case LINE: {
+   
+        double a = calculoAreaLinha((LINHA)dados_forma);
+        return a;
+
+    }
+    case TEXT: {
+    
+        double a = calculoAreaTexto((TEXTO)dados_forma);
+        return a;
+    }
+    case TEXT_STYLE:
+    return 0.0;
+    }
+    return 0.0;
+}
+
+
+
+static BoundingBox cria_boundingbox_forma( PosicaoFormaArena_t *P){
+
+    BoundingBox box;
+
+    switch (P->forma->tipo) {
+
+    case CIRCLE: {
+      double r = getRaioCirculo((CIRCULO)P->forma->data);
+
+      box.minX = P->x - r;
+      box.maxX = P->x + r;
+      box.minY = P->y - r;
+      box.maxY = P->y + r;
+      break;
+
+    }
+    case RECTANGLE: {
+      double l = getLarguraRetangulo((RETANGULO)P->forma->data);
+      double a = getAlturaRetangulo((RETANGULO)P->forma->data);
+      box.minX = P->x;
+      box.minY = P->y;
+      box.maxX = P->x + l;
+      box.maxY = P->y + a;
+      break;
+    }
+
+    case TEXT: {
+    
+      TEXTO t = (TEXTO)P->forma->data;
+
+       char *txt = getTxtTexto(t);
+      int len = (int)strlen(txt);
+      double segLen = 10.0 * (double)len;
+
+      char ancora= getAncoraTexto(t);
+
+      double x1 = P->x;
+      double y1 = P->y;
+      double x2 = P->x;
+      double y2 = P->y;
+
+
+      if (ancora == 'i' || ancora == 'I') {
+      
+        x2 = P->x + segLen;
+        y2 = P->y;
+      } else if (ancora == 'f' || ancora == 'F' || ancora == 'e' ||  ancora == 'E') {
+       
+        x1 = P->x - segLen;
+        y1 = P->y;
+
+      } else if (ancora == 'm' || ancora == 'M') {
+
+        
+        x1 = P->x - segLen * 0.5;
+        y1 = P->y;
+        x2 = P->x + segLen * 0.5;
+        y2 = P->y;
+      } else {
+
+        
+        x2 = P->x + segLen;
+        y2 = P->y;
+
+      }
+  
+      double dx = x2 - x1;
+      double dy = y2 - y1; 
+      double minLocalX = (dx < 0.0) ? dx : 0.0;
+      double maxLocalX = (dx > 0.0) ? dx : 0.0;
+      double minLocalY = (dy < 0.0) ? dy : 0.0;
+      double maxLocalY = (dy > 0.0) ? dy : 0.0;
+
+      
+      box.minX = x1 + minLocalX - 1.0;
+      box.maxX = x1 + maxLocalX + 1.0;
+      box.minY = y1 + minLocalY - 1.0;
+      box.maxY = y1 + maxLocalY + 1.0;
+      break;
+
+
+    }
+    case LINE: {
+
+
+      double x1 = getX1Linha((LINHA)P->forma->data);
+      double y1 = getY1Linha((LINHA)P->forma->data);
+      double x2 = getX2Linha((LINHA)P->forma->data);
+      double y2 = getY2Linha((LINHA)P->forma->data);
+      double dx = x2 - x1;
+      double dy = y2 - y1;
+      double minLocalX = (dx < 0.0) ? dx : 0.0;
+      double maxLocalX = (dx > 0.0) ? dx : 0.0;
+      double minLocalY = (dy < 0.0) ? dy : 0.0;
+      double maxLocalY = (dy > 0.0) ? dy : 0.0;
+    
+      box.minX = P->x + minLocalX - 1.0;
+      box.maxX = P->x + maxLocalX + 1.0;
+      box.minY = P->y + minLocalY - 1.0;
+      box.maxY = P->y + maxLocalY + 1.0;
+      break;
+
+
+    }
+    case TEXT_STYLE: {
+      
+      box.minX = box.maxX = P->x;
+      box.minY = box.maxY = P->y;
+      break;
+    }
+    }
+
+    return box;
+  }
+  
+  static bool sobreposicao_boundingbox(BoundingBox a, BoundingBox b) {   
+
+        if (a.maxX < b.minX)
+        return false;
+        if (b.maxX < a.minX)
+        return false;
+        if (a.maxY < b.minY)
+        return false;
+        if (b.maxY < a.minY)
+        return false;
+        return true;
+
+  }
+  
+  static bool sobreposicao_formas( PosicaoFormaArena_t *a,  PosicaoFormaArena_t *b) {
+
+
+        BoundingBox aa = cria_boundingbox_forma(a);
+        BoundingBox bb = cria_boundingbox_forma(b);
+
+        return sobreposicao_boundingbox(aa, bb);
+
+
+  }
+  
+static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB) {
+
+        switch (forma_original->tipo) {
+
+            case CIRCLE: {
+
+                CIRCULO c = (CIRCULO)forma_original->data;
+
+                int id = getIDCirculo(c);
+                double x = 0.0; 
+                double y = 0.0;
+                
+                x = getXCirculo(c);
+                y = getYCirculo(c);
+                double r = getRaioCirculo(c);
+                 char *preenchimento = getCorPCirculo(c);
+                CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, novaCorB);
+
+                return encapsula_forma(CIRCLE, novo_circulo);
+
+            }
+            case RECTANGLE: {
+
+                RETANGULO r = (RETANGULO)forma_original->data;
+                int id = getIDRetangulo(r);
+                double x = getXRetangulo(r);
+                double y = getYRetangulo(r);
+                double l = getLarguraRetangulo(r);
+                double a = getAlturaRetangulo(r);
+                 char *preenchimento = getCorPRetangulo(r);
+                RETANGULO novo_retangulo = criaRetangulo(id, x, y, a, l, novaCorB, preenchimento);
+
+                return encapsula_forma(RECTANGLE, novo_retangulo);
+            }
+
+            case TEXT: {
+
+                TEXTO t = (TEXTO)forma_original->data;
+                int id = getIDTexto(t);
+                double x = getXTexto(t);
+                double y = getYTexto(t);
+                 char *preenchimento = getCorPTexto(t);
+                char ancora = getAncoraTexto(t);
+                 char *txt = getTxtTexto(t);
+
+                TEXTO novo__texto = criaTexto(id, x, y, novaCorB, preenchimento, ancora, txt);
+                return encapsula_forma(TEXT, novo__texto);
+
+            }
+            case LINE: {
+
+                LINHA l = (LINHA)forma_original->data;
+                int id = getIDLinha(l);
+                double x1 = getX1Linha(l);
+                double y1 = getY1Linha(l);
+                double x2 = getX2Linha(l);
+                double y2 = getY2Linha(l);
+
+                LINHA nova_linha = criaLinha(id, x1, y1, x2, y2, novaCorB);
+                return encapsula_forma(LINE, nova_linha);
+
+            }
+            case TEXT_STYLE:
+            return NULL;
+        }
+        return NULL;
+  }
+  
+  static Forma_t *clonaForma_coresInvertidas(Forma_t *forma_original){
+
+    switch (forma_original->tipo) {
+
+    case CIRCLE: {
+      CIRCULO c = (CIRCULO)forma_original->data;
+      int id = getIDCirculo(c);
+      double x = getXCirculo(c);
+      double y = getYCirculo(c);
+      double r = getRaioCirculo(c);
+       char *borda = getCorBCirculo(c);
+       char *preenchimento = getCorPCirculo(c);
+      CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, borda);
+      return encapsula_forma(CIRCLE, novo_circulo);
+      
+    }
+    case RECTANGLE: {
+      RETANGULO r = (RETANGULO)forma_original->data;
+      int id = getIDRetangulo(r);
+      double x = getXRetangulo(r);
+      double y = getYRetangulo(r);
+      double l = getLarguraRetangulo(r);
+      double a = getAlturaRetangulo(r);
+       char *borda = getCorBRetangulo(r);
+       char *preenchimento = getCorPRetangulo(r);
+      RETANGULO novo_retangulo = criaRetangulo(id, x, y, a, l, preenchimento, borda);
+      return encapsula_forma(RECTANGLE, novo_retangulo);
+
+    }
+    case TEXT: {
+
+      TEXTO t = (TEXTO)forma_original->data;
+      int id = getIDTexto(t);
+      double x = getXTexto(t);
+      double y = getYTexto(t);
+       char *borda = getCorBTexto(t);
+       char *preenchimento = getCorPTexto(t);
+      char ancora = getAncoraTexto(t);
+       char *txt = getTxtTexto(t);
+
+      TEXTO novo_texto = criaTexto(id, x, y, preenchimento, borda, ancora, txt);
+      return encapsula_forma(TEXT, novo_texto);
+    }
+    case LINE: {
+
+      LINHA l = (LINHA)forma_original->data;
+      int id = getIDLinha(l);
+      double x1 = getX1Linha(l);
+      double y1 = getY1Linha(l);
+      double x2 =  getX2Linha(l);
+      double y2 = getY2Linha(l);
+       char *c = getCorLinha(l);
+      char *complemento = cor_complementar(c);
+      if (complemento == NULL)
+        return NULL;
+      LINHA nova_linha = criaLinha(id, x1, y1, x2, y2, complemento);
+
+      free(complemento);
+      return encapsula_forma(LINE, nova_linha);
+    }
+    case TEXT_STYLE:
+      
+      return NULL;
+    }
+    return NULL;
+  }
+  
+ 
+  
+  static void desaloca_forma(Forma_t *forma) {
+
+    if (forma == NULL)
+      return;
+    switch (forma->tipo) {
+    case CIRCLE:
+      desalocaCirculo((CIRCULO)forma->data);
+      break;
+    case RECTANGLE:
+      desalocarRetangulo((RETANGULO)forma->data);
+      break;
+    case LINE:
+      desalocaLinha((LINHA)forma->data);
+      break;
+    case TEXT:
+      desalocaTexto((TEXTO)forma->data);
+      break;
+    case TEXT_STYLE:
+      
+      break;
+    }
+    free(forma);
+  }
+  
+  static Forma_t *clona_posicao(Forma_t *forma_original, double x, double y, Chao chao) {
+
+    if (forma_original == NULL)
+      return NULL;
+
+    Forma_t *clonado = NULL;
+    switch (forma_original->tipo) {
+
+    case CIRCLE: {
+
+      CIRCULO c = (CIRCULO)forma_original->data;
+      int id = getIDCirculo(c);
+      double r = getRaioCirculo(c);
+       char *borda = getCorBCirculo(c);
+       char *preenchimento = getCorPCirculo(c);
+      CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, borda);
+      clonado = encapsula_forma(CIRCLE, novo_circulo);
+
+      break;
+    }
+    case RECTANGLE: {
+
+      RETANGULO r = (RETANGULO)forma_original->data;
+      int id = getIDRetangulo(r);
+      double l = getLarguraRetangulo(r);
+      double a = getAlturaRetangulo(r);
+       char *borda = getCorBRetangulo(r);
+       char *preenchimento = getCorPRetangulo(r);
+      RETANGULO novo_retangulo = criaRetangulo(id, x, y, a, l, borda, preenchimento);
+      clonado = encapsula_forma(RECTANGLE, novo_retangulo);
+      break;
+
+    }
+    case TEXT: {
+
+      TEXTO t = (TEXTO)forma_original->data;
+      int id = getIDTexto(t);
+       char *borda = getCorBTexto(t);
+       char *preenchimento = getCorPTexto(t);
+      char ancora = getAncoraTexto(t);
+       char *txt = getTxtTexto(t);
+      TEXTO novo_texto = criaTexto(id, x, y, borda, preenchimento, ancora, txt);
+      clonado = encapsula_forma(TEXT, novo_texto);
+      break;
+
+    }
+    case LINE: {
+
+      LINHA l = (LINHA)forma_original->data;
+      int id = getIDLinha(l);
+      double dx = getX2Linha(l) - getX1Linha(l);
+      double dy = getY2Linha(l) - getY1Linha(l);
+      LINHA nova_linha = criaLinha(id, x, y, x + dx, y + dy, getCorLinha(l));
+      clonado = encapsula_forma(LINE, nova_linha);
+
+      break;
+    }
+    case TEXT_STYLE:
+      return NULL;
+    }
+  
+   
+    if (clonado != NULL && chao != NULL) {
+      pushPilha(obtem_pilha_para_desalocar(chao), clonado);
+
+    }
+    return clonado;
+  }
+  
+  static Forma_t *clone_posicao_corB(Forma_t *forma_original,  char *novaCorB, double x, double y, Chao chao) {
+
+    if (forma_original == NULL)
+      return NULL;
+    Forma_t *clonado = NULL;
+    switch (forma_original->tipo) {
+    case CIRCLE: {
+
+      CIRCULO c = (CIRCULO)forma_original->data;
+      int id = getIDCirculo(c);
+      double r = getRaioCirculo(c);
+       char *preenchimento = getCorPCirculo(c);
+      CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, novaCorB);
+      clonado = encapsula_forma(CIRCLE, novo_circulo);
+      break;
+    }
+    case RECTANGLE: {
+      RETANGULO r = (RETANGULO)forma_original->data;
+      int id = getIDRetangulo(r);
+      double l = getLarguraRetangulo(r);
+      double a = getAlturaRetangulo(r);
+       char *preenchimento = getCorPRetangulo(r);
+      RETANGULO novo_retangulo = criaRetangulo(id, x, y, a, l, novaCorB, preenchimento);
+      clonado = encapsula_forma(RECTANGLE, novo_retangulo);
+      break;
+    }
+    case TEXT: {
+      TEXTO t = (TEXTO)forma_original->data;
+      int id = getIDTexto(t);
+       char *preenchimento = getCorPTexto(t);
+      char ancora = getAncoraTexto(t);
+       char *txt = getTxtTexto(t);
+      TEXTO novo_texto = criaTexto(id, x, y, novaCorB, preenchimento, ancora, txt);
+      clonado = encapsula_forma(TEXT, novo_texto);
+      break;
+    }
+    case LINE: {
+      LINHA l = (LINHA)forma_original->data;
+      int id = getIDLinha(l);
+      double dx = getX2Linha(l) - getX1Linha(l);
+      double dy = getY2Linha(l) - getY1Linha(l);
+      LINHA nova_linha = criaLinha(id, x, y, x + dx, y + dy, novaCorB);
+      clonado = encapsula_forma(LINE, nova_linha);
+      break;
+    }
+    case TEXT_STYLE:
+      return NULL;
+    }
+  
+    
+    if (clonado != NULL && chao != NULL) {
+      pushPilha(obtem_pilha_para_desalocar(chao), clonado);
+    }
+  
+    return clonado;
+  }
+  
+  static Forma_t *clona_posicao_coresInvertidas(Forma_t *forma_original, double x, double y, Chao chao) {
+
+    if (forma_original == NULL)
+      return NULL;
+    Forma_t *clonado = NULL;
+    switch (forma_original->tipo) {
+
+    case CIRCLE: {
+      CIRCULO c = (CIRCULO)forma_original->data;
+      int id = getIDCirculo(c);
+      double r = getRaioCirculo(c);
+       char *borda = getCorBCirculo(c);
+       char *preenchimento = getCorPCirculo(c);
+      CIRCULO novo_circulo = criaCirculo(id, x, y, r, borda, preenchimento);
+      clonado = encapsula_forma(CIRCLE, novo_circulo);
+      break;
+    }
+    case RECTANGLE: {
+      RETANGULO r = (RETANGULO)forma_original->data;
+      int id = getIDRetangulo(r);
+      double l = getLarguraRetangulo(r);
+      double a = getAlturaRetangulo(r);
+       char *borda = getCorBRetangulo(r);
+       char *preenchimento = getCorPRetangulo(r);
+      RETANGULO novo_retangulo = criaRetangulo(id, x, y, a, l, preenchimento, borda);
+      clonado = encapsula_forma(RECTANGLE, novo_retangulo);
+      break;
+    }
+    case TEXT: {
+      TEXTO t = (TEXTO)forma_original->data;
+      int id = getIDTexto(t);
+       char *borda = getCorBTexto(t);
+       char *preenchimento = getCorPTexto(t);
+      char ancora = getAncoraTexto(t);
+       char *txt = getTxtTexto(t);
+      TEXTO novo_texto = criaTexto(id, x, y, preenchimento, borda, ancora, txt);
+      clonado = encapsula_forma(TEXT, novo_texto);
+      break;
+    }
+    case LINE: {
+      LINHA l = (LINHA)forma_original->data;
+      int id = getIDLinha(l);
+      double dx = getX2Linha(l) - getX1Linha(l);
+      double dy = getY2Linha(l) - getX1Linha(l);
+       char *c = getCorLinha(l);
+      char *complemento = cor_complementar(c);
+      if (complemento == NULL)
+        return NULL;
+      LINHA nova_linha = criaLinha(id, x, y, x + dx, y + dy, complemento);
+      free(complemento);
+      clonado = encapsula_forma(LINE, nova_linha);
+      break;
+    }
+    case TEXT_STYLE:
+      return NULL;
+    }
+  
+    
+    if (clonado != NULL && chao != NULL) {
+      pushPilha(obtem_pilha_para_desalocar(chao), clonado);
+    }
+  
+    return clonado;
+  }
+  
+  // =====================
+  //Escritor do svg
+  // =====================
+  static void cria_svg_com_resultado(DadosDoArquivo dadosQry, DadosDoArquivo dadosGeo,  Chao chao, Pilha arena,  char *caminho_output) {
+
+     char *nome_geo_src = obter_nome_arquivo(dadosGeo);
+     char *nome_qry_src = obter_nome_arquivo(dadosQry);
+    size_t geo_len = strlen(nome_geo_src);
+    size_t qry_len = strlen(nome_qry_src);
+  
+    char *geo_base = malloc(geo_len + 1);
+    char *qry_base = malloc(qry_len + 1);
+    if (geo_base == NULL || qry_base == NULL) {
+      printf("Error: Memory allocation failed for file name\n");
+      free(geo_base);
+      free(qry_base);
+      return;
+    }
+    strcpy(geo_base, nome_geo_src);
+    strcpy(qry_base, nome_qry_src);
+    strtok(geo_base, ".");
+    strtok(qry_base, ".");
+  
+    // geoBase-qryBase.svg
+    size_t caminho_len = strlen(caminho_output);
+    size_t nome_processado_len = strlen(geo_base) + 1 + strlen(qry_base);
+    size_t total_len = caminho_len + 1 + nome_processado_len + 4 + 1;
+    char *caminho_output_arquivo = malloc(total_len);
+    if (caminho_output_arquivo == NULL) {
+      printf("Error na alocação de memoria pro caminho do arquivo\n");
+      free(geo_base);
+      free(qry_base);
+      return;
+    }
+  
+    int result = snprintf(caminho_output_arquivo, total_len, "%s/%s-%s.svg", caminho_output, geo_base, qry_base);
+    if (result < 0 || (size_t)result >= total_len) {
+      printf("Error: rução do caminho falhou\n");
+      free(caminho_output_arquivo);
+      free(geo_base);
+      free(qry_base);
+      return;
+    }
+  
+    FILE *file = fopen(caminho_output_arquivo, "w");
+    if (file == NULL) {
+      printf("Error falha em abrir arquivo: %s\n", caminho_output_arquivo);
+      free(caminho_output_arquivo);
+      free(geo_base);
+      free(qry_base);
+      return;
+    }
+  
+    fprintf(file, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+    fprintf(file, "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 1000 "
+                  "1000\">\n");
+  
+    
+    Fila fila_chao = get_fila_chao(chao);
+    Fila fila_temp = criaFila();
+    while (!filaVazia(fila_chao)) {
+      Forma_t *forma = (Forma_t *)dequeueFila(fila_chao);
+      if (forma != NULL) {
+        if (forma->tipo == CIRCLE) {
+          CIRCULO c = (CIRCULO)forma->data;
+          fprintf(
+              file,
+              "<circle cx='%.2f' cy='%.2f' r='%.2f' fill='%s' stroke='%s'/>\n",
+              getXCirculo(c), getYCirculo(c),
+              getRaioCirculo(c), getCorPCirculo(c),
+              getCorBCirculo(c));
+
+        } else if (forma->tipo == RECTANGLE) {
+          RETANGULO r = (RETANGULO)forma->data;
+          fprintf(file,
+                  "<rect x='%.2f' y='%.2f' width='%.2f' height='%.2f' fill='%s' "
+                  "stroke='%s'/>\n",
+                  getXRetangulo(r), getYRetangulo(r),
+                  getLarguraRetangulo(r), getAlturaRetangulo(r),
+                  getCorBRetangulo(r),
+                  getCorPRetangulo(r));
+        } else if (forma->tipo == LINE) {
+
+            LINHA l = (LINHA)forma->data;
+
+          fprintf(file,
+                  "<line x1='%.2f' y1='%.2f' x2='%.2f' y2='%.2f' stroke='%s'/>\n",
+                  getX1Linha(l), getY1Linha(l), getX2Linha(l),
+                  getY2Linha(l), getCorLinha(l));
+        } else if (forma->tipo == TEXT) {
+
+          TEXTO t = (TEXTO)forma->data;
+          char ancora = getAncoraTexto(t);
+           char *ancora_texto = "start";
+          if (ancora == 'm' || ancora == 'M') {
+            ancora_texto = "middle";
+          } else if (ancora == 'e' || ancora == 'E' || ancora == 'f' || ancora == 'F') {
+             ancora_texto = "end";
+          } else if (ancora == 's' || ancora == 'S' || ancora == 'i' || ancora == 'I') {
+            ancora_texto = "start";
+          }
+          fprintf(file,
+                  "<text x='%.2f' y='%.2f' fill='%s' stroke='%s' "
+                  "text-anchor='%s'>%s</text>\n",
+                  getXTexto(t), getYTexto(t), getCorPTexto(t),
+                  getCorBTexto(t), ancora_texto, getTxtTexto(t));
+        }
+      }
+      enqueueFila(fila_temp, forma);
+    }
+    
+    while (!filaVazia(fila_temp)) {
+      enqueueFila(fila_chao, dequeueFila(fila_temp));
+    }
+    desalocaFila(fila_temp);
+  
+    
+    Pilha pilha_temp = criaPilha();
+    while (!pilhaVazia(arena)) {
+      PosicaoFormaArena_t *f = (PosicaoFormaArena_t *)popPilha(arena);
+      if (f != NULL && f->isAnnotated) {
+        
+        fprintf(file,
+                "<line x1='%.2f' y1='%.2f' x2='%.2f' y2='%.2f' stroke='red' "
+                "stroke-dasharray='4,2' stroke-width='1'/>\n",
+                f->dispX, f->dispY, f->x, f->y);
+    
+        fprintf(file,
+                "<circle cx='%.2f' cy='%.2f' r='3' fill='none' stroke='red' "
+                "stroke-width='1'/>\n",
+                f->x, f->y);
+
+        double dx = f->x - f->dispX;
+        double dy = f->y - f->dispY;
+        double midHx = f->dispX + dx * 0.5;
+        double midHy = f->dispY;
+        double midVx = f->x;
+        double midVy = f->dispY + dy * 0.5;
+  
+        fprintf(file,
+                "<line x1='%.2f' y1='%.2f' x2='%.2f' y2='%.2f' stroke='purple' "
+                "stroke-dasharray='2,2' stroke-width='0.8'/>\n",
+                f->dispX, f->dispY, f->x, f->dispY);
+        
+        fprintf(file,
+                "<line x1='%.2f' y1='%.2f' x2='%.2f' y2='%.2f' stroke='purple' "
+                "stroke-dasharray='2,2' stroke-width='0.8'/>\n",
+                f->x, f->dispY, f->x, f->y);
+  
+        fprintf(file,
+                "<text x='%.2f' y='%.2f' fill='purple' font-size='12' "
+                "text-anchor='middle'>%.2f</text>\n",
+                midHx, midHy - 5.0, dx);
+  
+        fprintf(file,
+                "<text x='%.2f' y='%.2f' fill='purple' font-size='12' "
+                "text-anchor='middle' transform='rotate(-90 %.2f "
+                "%.2f)'>%.2f</text>\n",
+                midVx + 10.0, midVy, midVx + 10.0, midVy, dy);
+      }
+      pushPilha(pilha_temp, f);
+    }
+    
+    while (!pilhaVazia(pilha_temp)) {
+      pushPilha(arena, popPilha(pilha_temp));
+    }
+    desalocaPilha(pilha_temp);
+  
+    fprintf(file, "</svg>\n");
+    fclose(file);
+    free(caminho_output_arquivo);
+    free(geo_base);
+    free(qry_base);
+  }

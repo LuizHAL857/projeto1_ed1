@@ -8,8 +8,8 @@
 #include <string.h>
 // Estrutura que representa os dados de um arquivo
 struct DadosDoArquivo {
-    const char *caminhoArquivo;
-    const char *nomeArquivo;
+     char *caminhoArquivo;
+     char *nomeArquivo;
     Fila filaDeLinhas;
     // Esta pilha é usada para liberar as linhas do
     // arquivo após a execução dos comandos
@@ -26,12 +26,12 @@ struct DadosDoArquivo {
   static char *ler_linha(FILE *arquivo, char *buffer, size_t tamanho);
 
   static struct FilaEPilhaDeLinhas *
-  ler_arquivo_para_fila_e_pilha(const char *caminhoArquivo);
+  ler_arquivo_para_fila_e_pilha( char *caminhoArquivo);
 
-  char *duplicaString(const char *s) ;
+  char *duplicaString( char *s) ;
   
  
-  DadosDoArquivo criar_dados_arquivo(const char *caminhoArquivo) {
+  DadosDoArquivo criar_dados_arquivo( char *caminhoArquivo) {
     struct DadosDoArquivo *arquivo = malloc(sizeof(struct DadosDoArquivo));
     if (arquivo == NULL) {
       printf("Erro: Falha ao alocar memória para DadosDoArquivo\n");
@@ -62,7 +62,7 @@ struct DadosDoArquivo {
   
  
   static struct FilaEPilhaDeLinhas *
-  ler_arquivo_para_fila_e_pilha(const char *caminhoArquivo) {
+  ler_arquivo_para_fila_e_pilha( char *caminhoArquivo) {
     struct FilaEPilhaDeLinhas *filaEPilha =
         malloc(sizeof(struct FilaEPilhaDeLinhas));
     if (filaEPilha == NULL) {
@@ -93,49 +93,50 @@ struct DadosDoArquivo {
     }
   
     fclose(arquivo);
-    // Atribui as estruturas criadas à estrutura antes de retornar
+    
     filaEPilha->filaDeLinhas = fila;
     filaEPilha->pilhaLinhasParaLiberar = pilha;
     return filaEPilha;
   }
   
-  // Destroi uma instância de DadosDoArquivo e libera memória
+  
   void destruir_dados_arquivo(DadosDoArquivo dadosArquivo) {
     if (dadosArquivo != NULL) {
       struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
-      // Libera as linhas do arquivo
+      
+
       while (!pilhaVazia(arquivo->pilhaLinhasParaLiberar)) {
         void *linha = popPilha(arquivo->pilhaLinhasParaLiberar);
         linha != NULL ? free(linha) : NULL;
       }
-      // Destroi a pilha de linhas
+     
       desalocaPilha(arquivo->pilhaLinhasParaLiberar);
-      // Destroi a fila de linhas
+      
       desalocaFila(arquivo->filaDeLinhas);
-      // Libera a estrutura de dados do arquivo
+      
       free(dadosArquivo);
     }
   }
-  
-  // Retorna o caminho do arquivo
-  const char *obter_caminho_arquivo(const DadosDoArquivo dadosArquivo) {
+
+
+     char *obter_caminho_arquivo( DadosDoArquivo dadosArquivo) {
     struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
     return arquivo->caminhoArquivo;
   }
   
-  // Retorna o nome do arquivo
-  const char *obter_nome_arquivo(const DadosDoArquivo dadosArquivo) {
+  
+   char *obter_nome_arquivo( DadosDoArquivo dadosArquivo) {
     struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
     return arquivo->nomeArquivo;
   }
   
-  // Retorna a fila de linhas do arquivo
-  Fila obter_fila_linhas(const DadosDoArquivo dadosArquivo) {
+  
+  Fila obter_fila_linhas( DadosDoArquivo dadosArquivo) {
     struct DadosDoArquivo *arquivo = (struct DadosDoArquivo *)dadosArquivo;
     return arquivo->filaDeLinhas;
   }
   
-  // Lê uma linha do arquivo usando fgets
+  
   static char *ler_linha(FILE *arquivo, char *buffer, size_t tamanho) {
     if (fgets(buffer, tamanho, arquivo) != NULL) {
      
@@ -148,7 +149,7 @@ struct DadosDoArquivo {
     return NULL;
   }
   
-  char *duplicaString(const char *s) {
+  char *duplicaString( char *s) {
     if (s == NULL)
       return NULL;
   

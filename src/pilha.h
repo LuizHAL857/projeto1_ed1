@@ -58,6 +58,26 @@ void* popPilha(Pilha pilha);
  */
 void* topoPilha(Pilha pilha);
 
+
+/**
+
+
+ * Retorna o elemento da pilha no índice especificado sem remove-lo
+
+
+ * @param stack Poteiro para a pilha
+
+
+ * @param index Indice do elemento ( 0 é o topo da pilha)
+
+
+ * @return Conteúdo do elemento no indice ou NULL se a pilha for vazia ou o indice inválido
+
+
+ */
+
+ void *pilhaElemento(Pilha pilha, int id);
+
 /**
  * @brief Verifica se a pilha está vazia.
  * 
