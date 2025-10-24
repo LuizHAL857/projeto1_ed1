@@ -305,7 +305,7 @@ static void cria_fila_svg(Chao_t *chao, char* caminho_output, DadosDoArquivo fil
     return;
     }
 
-    // Use snprintf for safe string ruction
+   
     int result = snprintf(caminho_output_arquivo, total_len, "%s/%s.svg",
     caminho_output, nome_arquivo);
     if (result < 0 || (size_t)result >= total_len) {
@@ -346,8 +346,8 @@ static void cria_fila_svg(Chao_t *chao, char* caminho_output, DadosDoArquivo fil
     "stroke='%s'/>\n",
     getXRetangulo(r), getYRetangulo(r),
     getLarguraRetangulo(r), getAlturaRetangulo(r),
-    getCorBRetangulo(r),
-    getCorPRetangulo(r));
+    getCorPRetangulo(r),
+    getCorBRetangulo(r));
 
 
     } else if (forma->tipo == LINE) {

@@ -829,7 +829,7 @@ static void executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
         if (strcmp(botao_esquerdo_ou_direiro, "e") == 0) {
 
         
-        int id_alvo = (*disparadores)[indice_disparador].idCarregadorDireito;
+        int id_alvo = (*disparadores)[indice_disparador].idCarregadorEsquerdo;
             if (id_alvo != -1) {
 
                 for (int i = 0; i < *contagem_carregadores; i++) {
@@ -1211,166 +1211,10 @@ static BoundingBox cria_boundingbox_forma( PosicaoFormaArena_t *P){
 
   }
   
-static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB) {
 
-        switch (forma_original->tipo) {
-
-            case CIRCLE: {
-
-                CIRCULO c = (CIRCULO)forma_original->data;
-
-                int id = getIDCirculo(c);
-                double x = 0.0; 
-                double y = 0.0;
-                
-                x = getXCirculo(c);
-                y = getYCirculo(c);
-                double r = getRaioCirculo(c);
-                 char *preenchimento = getCorPCirculo(c);
-                CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, novaCorB);
-
-                return encapsula_forma(CIRCLE, novo_circulo);
-
-            }
-            case RECTANGLE: {
-
-                RETANGULO r = (RETANGULO)forma_original->data;
-                int id = getIDRetangulo(r);
-                double x = getXRetangulo(r);
-                double y = getYRetangulo(r);
-                double l = getLarguraRetangulo(r);
-                double a = getAlturaRetangulo(r);
-                 char *preenchimento = getCorPRetangulo(r);
-                RETANGULO novo_retangulo = criaRetangulo(id, x, y, a, l, novaCorB, preenchimento);
-
-                return encapsula_forma(RECTANGLE, novo_retangulo);
-            }
-
-            case TEXT: {
-
-                TEXTO t = (TEXTO)forma_original->data;
-                int id = getIDTexto(t);
-                double x = getXTexto(t);
-                double y = getYTexto(t);
-                 char *preenchimento = getCorPTexto(t);
-                char ancora = getAncoraTexto(t);
-                 char *txt = getTxtTexto(t);
-
-                TEXTO novo__texto = criaTexto(id, x, y, novaCorB, preenchimento, ancora, txt);
-                return encapsula_forma(TEXT, novo__texto);
-
-            }
-            case LINE: {
-
-                LINHA l = (LINHA)forma_original->data;
-                int id = getIDLinha(l);
-                double x1 = getX1Linha(l);
-                double y1 = getY1Linha(l);
-                double x2 = getX2Linha(l);
-                double y2 = getY2Linha(l);
-
-                LINHA nova_linha = criaLinha(id, x1, y1, x2, y2, novaCorB);
-                return encapsula_forma(LINE, nova_linha);
-
-            }
-            case TEXT_STYLE:
-            return NULL;
-        }
-        return NULL;
-  }
   
-  static Forma_t *clonaForma_coresInvertidas(Forma_t *forma_original){
-
-    switch (forma_original->tipo) {
-
-    case CIRCLE: {
-      CIRCULO c = (CIRCULO)forma_original->data;
-      int id = getIDCirculo(c);
-      double x = getXCirculo(c);
-      double y = getYCirculo(c);
-      double r = getRaioCirculo(c);
-       char *borda = getCorBCirculo(c);
-       char *preenchimento = getCorPCirculo(c);
-      CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, borda);
-      return encapsula_forma(CIRCLE, novo_circulo);
-      
-    }
-    case RECTANGLE: {
-      RETANGULO r = (RETANGULO)forma_original->data;
-      int id = getIDRetangulo(r);
-      double x = getXRetangulo(r);
-      double y = getYRetangulo(r);
-      double l = getLarguraRetangulo(r);
-      double a = getAlturaRetangulo(r);
-       char *borda = getCorBRetangulo(r);
-       char *preenchimento = getCorPRetangulo(r);
-      RETANGULO novo_retangulo = criaRetangulo(id, x, y, a, l, preenchimento, borda);
-      return encapsula_forma(RECTANGLE, novo_retangulo);
-
-    }
-    case TEXT: {
-
-      TEXTO t = (TEXTO)forma_original->data;
-      int id = getIDTexto(t);
-      double x = getXTexto(t);
-      double y = getYTexto(t);
-       char *borda = getCorBTexto(t);
-       char *preenchimento = getCorPTexto(t);
-      char ancora = getAncoraTexto(t);
-       char *txt = getTxtTexto(t);
-
-      TEXTO novo_texto = criaTexto(id, x, y, preenchimento, borda, ancora, txt);
-      return encapsula_forma(TEXT, novo_texto);
-    }
-    case LINE: {
-
-      LINHA l = (LINHA)forma_original->data;
-      int id = getIDLinha(l);
-      double x1 = getX1Linha(l);
-      double y1 = getY1Linha(l);
-      double x2 =  getX2Linha(l);
-      double y2 = getY2Linha(l);
-       char *c = getCorLinha(l);
-      char *complemento = cor_complementar(c);
-      if (complemento == NULL)
-        return NULL;
-      LINHA nova_linha = criaLinha(id, x1, y1, x2, y2, complemento);
-
-      free(complemento);
-      return encapsula_forma(LINE, nova_linha);
-    }
-    case TEXT_STYLE:
-      
-      return NULL;
-    }
-    return NULL;
-  }
   
  
-  
-  static void desaloca_forma(Forma_t *forma) {
-
-    if (forma == NULL)
-      return;
-    switch (forma->tipo) {
-    case CIRCLE:
-      desalocaCirculo((CIRCULO)forma->data);
-      break;
-    case RECTANGLE:
-      desalocarRetangulo((RETANGULO)forma->data);
-      break;
-    case LINE:
-      desalocaLinha((LINHA)forma->data);
-      break;
-    case TEXT:
-      desalocaTexto((TEXTO)forma->data);
-      break;
-    case TEXT_STYLE:
-      
-      break;
-    }
-    free(forma);
-  }
   
   static Forma_t *clona_posicao(Forma_t *forma_original, double x, double y, Chao chao) {
 
@@ -1387,7 +1231,7 @@ static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB) {
       double r = getRaioCirculo(c);
        char *borda = getCorBCirculo(c);
        char *preenchimento = getCorPCirculo(c);
-      CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, borda);
+      CIRCULO novo_circulo = criaCirculo(id, x, y, r, borda, preenchimento);
       clonado = encapsula_forma(CIRCLE, novo_circulo);
 
       break;
@@ -1453,7 +1297,7 @@ static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB) {
       int id = getIDCirculo(c);
       double r = getRaioCirculo(c);
        char *preenchimento = getCorPCirculo(c);
-      CIRCULO novo_circulo = criaCirculo(id, x, y, r, preenchimento, novaCorB);
+      CIRCULO novo_circulo = criaCirculo(id, x, y, r, novaCorB, preenchimento);
       clonado = encapsula_forma(CIRCLE, novo_circulo);
       break;
     }
@@ -1576,7 +1420,7 @@ static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB) {
     char *geo_base = malloc(geo_len + 1);
     char *qry_base = malloc(qry_len + 1);
     if (geo_base == NULL || qry_base == NULL) {
-      printf("Error: Memory allocation failed for file name\n");
+      printf("Erro de alocação\n");
       free(geo_base);
       free(qry_base);
       return;
@@ -1600,7 +1444,7 @@ static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB) {
   
     int result = snprintf(caminho_output_arquivo, total_len, "%s/%s-%s.svg", caminho_output, geo_base, qry_base);
     if (result < 0 || (size_t)result >= total_len) {
-      printf("Error: rução do caminho falhou\n");
+      printf("Error: construção do caminho falhou\n");
       free(caminho_output_arquivo);
       free(geo_base);
       free(qry_base);
@@ -1642,8 +1486,8 @@ static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB) {
                   "stroke='%s'/>\n",
                   getXRetangulo(r), getYRetangulo(r),
                   getLarguraRetangulo(r), getAlturaRetangulo(r),
-                  getCorBRetangulo(r),
-                  getCorPRetangulo(r));
+                  getCorPRetangulo(r),
+                  getCorBRetangulo(r));
         } else if (forma->tipo == LINE) {
 
             LINHA l = (LINHA)forma->data;

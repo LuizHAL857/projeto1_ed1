@@ -19,7 +19,7 @@ typedef struct {
 }retangulo;
 
 
-RETANGULO criaRetangulo(int id, float x, float y, float altura, float largura, char *corP, char *corB){
+RETANGULO criaRetangulo(int id, float x, float y, float altura, float largura, char *corB, char *corP){
 
     
     retangulo *r = (retangulo*) malloc(sizeof(retangulo));
