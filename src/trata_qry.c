@@ -135,9 +135,6 @@ static bool sobreposicao_formas( PosicaoFormaArena_t *a,  PosicaoFormaArena_t *b
 static Forma_t *encapsula_forma(TipoForma tipo, void *data);
 
 
-static Forma_t *clonaForma_corB(Forma_t *forma_original,   char *novaCorB);
-
-static Forma_t *clonaForma_coresInvertidas(Forma_t *forma_original);
 
 // Funções para auxiliar clonagem
 static Forma_t *clona_posicao(Forma_t *forma_original, double x, double y, Chao chao);
@@ -146,7 +143,7 @@ static Forma_t *clone_posicao_corB(Forma_t *forma_original,  char *novaCorB, dou
                                                     
 static Forma_t *clona_posicao_coresInvertidas(Forma_t *forma_original, double x, double y, Chao chao);
                                                       
-static void desaloca_forma(Forma_t *forma);
+
 
 
 // Função para escrever o arquivo svg
