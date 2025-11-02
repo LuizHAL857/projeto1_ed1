@@ -103,12 +103,12 @@ static void executa_shft(Disparador_t **disparadores, int *contagem_disparadores
 static void executa_dsp(Disparador_t **disparadores, int *contagem_disparadores,  Pilha arena, Pilha pilha_para_free, FILE *txt);
 
 
-static void executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
+int executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
     Pilha pilha_para_free, Pilha arena,
     Carregador_t *carregadores, int* contagem_carregadores, FILE *txt);
 
 
-static void executa_calc(Pilha arena, Chao chao, FILE *txt);
+static void executa_calc(Pilha arena, Chao chao, FILE *txt, int qtd_comandos,int qtd_disparos);
 
 
 static int encontra_disparador_por_id(Disparador_t **disparadores, int contagem_disparadores, int id);
@@ -159,14 +159,16 @@ Qry executa_qry(DadosDoArquivo dados_qry, DadosDoArquivo dados_geo, Chao chao,  
     qry->arena = criaPilha();
     qry->pilha_para_free = criaPilha();
 
-    // Note: qry should NOT be added to stackToFree as it causes premature freeing
+   
 
     Disparador_t *disparadores = NULL;
     int disparadorCount = 0;
     Carregador_t *carregadores = NULL;
     int carregadorCount = 0;
 
-    // Abrir arquivo .txt com o mesmo nome-base do SVG de saída, mas extensão .txt
+    int qtd_comandos = 0;
+    int qtd_disparos = 0;
+
     size_t geo_len = strlen(obter_nome_arquivo(dados_geo));
     size_t qry_len = strlen(obter_nome_arquivo(dados_qry));
     char *geo_base = malloc(geo_len + 1);
@@ -182,7 +184,7 @@ Qry executa_qry(DadosDoArquivo dados_qry, DadosDoArquivo dados_geo, Chao chao,  
     strtok(geo_base, ".");
     strtok(qry_base, ".");
     size_t path_len = strlen(output_path);
-    // geoBase-qryBase.txt
+    
     size_t nome_processado_len = strlen(geo_base) + 1 + strlen(qry_base);
     size_t total_len = path_len + 1 + nome_processado_len + 4 + 1; // +4 for ".txt"
     char *output_txt_path = malloc(total_len);
@@ -216,27 +218,40 @@ Qry executa_qry(DadosDoArquivo dados_qry, DadosDoArquivo dados_geo, Chao chao,  
 
     if (strcmp(command, "pd") == 0) {
     executa_pd(&disparadores, &disparadorCount, qry->pilha_para_free);
+    qtd_comandos++;
+
     } else if (strcmp(command, "lc") == 0) {
     executa_lc(&carregadores, &carregadorCount, chao, qry->pilha_para_free, txtFile);
+    qtd_comandos++;
+
     } else if (strcmp(command, "atch") == 0) {
     executa_atch(&carregadores, &carregadorCount, &disparadores, &disparadorCount, qry->pilha_para_free);
+    qtd_comandos++;
+
     } else if (strcmp(command, "shft") == 0) {
     executa_shft(&disparadores, &disparadorCount, carregadores, &carregadorCount, txtFile);
+    qtd_comandos++;
+
     } else if (strcmp(command, "dsp") == 0) {
     executa_dsp(&disparadores, &disparadorCount, qry->arena, qry->pilha_para_free, txtFile);
+    qtd_comandos++;
+    qtd_disparos++;
+
 
     } else if (strcmp(command, "rjd") == 0) {
-    executa_rjd(&disparadores, &disparadorCount, qry->pilha_para_free, qry->arena, carregadores, &carregadorCount, txtFile);
+    qtd_disparos += executa_rjd(&disparadores, &disparadorCount, qry->pilha_para_free, qry->arena, carregadores, &carregadorCount, txtFile);
+    qtd_comandos++;
+
     } else if (strcmp(command, "calc") == 0) {
-    executa_calc(qry->arena, chao, txtFile);
+      qtd_comandos++;
+    executa_calc(qry->arena, chao, txtFile, qtd_comandos, qtd_disparos);
+
     } else
     printf("Unknown command: %s\n", command);
     }
 
-    // After processing all commands, emit final SVG with remaining ground shapes
-    // and visual annotations derived from the arena
-    cria_svg_com_resultado(dados_qry, dados_geo, chao, qry->arena,
-    output_path);
+
+    cria_svg_com_resultado(dados_qry, dados_geo, chao, qry->arena, output_path);
 
     fclose(txtFile);
     return (Qry)qry;
@@ -272,7 +287,7 @@ void desaloca_qry(Qry qry) {
             desalocaPilha(*p);
 
           }
-       //   free(o->pointer);
+       
 
           break;
         }
@@ -354,7 +369,7 @@ static void executa_lc(Carregador_t **loaders, int *loadersCount, Chao ground, P
     int loaderId = atoi(identifier);
     int nova_quantia_formas= atoi(primeirasXFormas);
 
-    fprintf(txtFile, "[lc]\n");
+    fprintf(txtFile, "lc\n");
     fprintf(txtFile, "\tCarregador ID: %d\n", loaderId);
     fprintf(txtFile, "\tNova quantia de formas: %d\n", nova_quantia_formas);
 
@@ -703,12 +718,12 @@ static void executa_shft(Disparador_t **disparadores, int *contagem_disparadores
     char *botao_esquerdo_ou_direito = strtok(NULL, " ");
     char *qtdPressionada = strtok(NULL, " ");
 
-    fprintf(txt, "shft");
+    fprintf(txt, "shft:\n");
 
     int disparadorIDInt = atoi(disparadorID);
     int qtdPressionadaInt = atoi(qtdPressionada);
 
-    fprintf(txt, "\tDisparador ID: %d", disparadorIDInt);
+    fprintf(txt, "\tDisparador ID\n: %d", disparadorIDInt);
     fprintf(txt, "\tBotão: %s", botao_esquerdo_ou_direito);
     fprintf(txt, "\tQuantidade de vezes pressionado: %d", qtdPressionadaInt);
     fprintf(txt, "\n");
@@ -741,7 +756,7 @@ static void realiza_disparo(Disparador_t **disparadores, int contagem_disparador
 
     Forma_t *forma = (Forma_t *)disparador->posicao_disparo;
 
-  //  TipoForma tipo_forma = forma->tipo;
+ 
 
     
     PosicaoFormaArena_t *posicao_forma_arena = malloc(sizeof(PosicaoFormaArena_t));
@@ -783,17 +798,18 @@ static void executa_dsp(Disparador_t **disparadores, int *contagem_disparadores,
     double dxDouble = atof(dx);
     double dyDouble = atof(dy);
 
-    fprintf(txt, "dsp\n");
+    fprintf(txt, "dsp:\n");
     fprintf(txt, "\tDisparador ID: %d\n", disparadorIDInt);
     fprintf(txt, "\tDX: %f\n", dxDouble);
     fprintf(txt, "\tDY: %f\n", dyDouble);
-    fprintf(txt, "\tAnotação das dimensões: %s\n", dimensoes_annotate);
+    fprintf(txt, "\tAnotação das dimensões: %s\n\n", dimensoes_annotate);
 
     realiza_disparo(disparadores, *contagem_disparadores, disparadorIDInt, dxDouble,
     dyDouble, dimensoes_annotate, arena, pilha_para_free);
 
 }
-static void executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
+
+int executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
     Pilha pilha_para_free, Pilha arena,
     Carregador_t *carregadores, int* contagem_carregadores, FILE *txt) {
 
@@ -816,7 +832,7 @@ static void executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
         if (indice_disparador == -1) {
 
             printf("Erro disparador com ID %d não encontrado\n", disparadorIdInt);
-            return;
+            return 0;
         }
 
         Disparador_t *disparador = &(*disparadores)[indice_disparador];
@@ -865,41 +881,38 @@ static void executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
 
         } else {
             printf("Erro: botão deve ser 'e' ou'd' \n");
-            return;
+            return 0;
         }
 
         if (carregador == NULL || carregador->formas == NULL) {
             printf("Error: Loader not found or shapes stack is NULL\n");
-            return;
+            return 0; 
         }
 
         int qtd = 1;
 
-        fprintf(txt, "rjd\n");
+        fprintf(txt, "rjd:\n");
         fprintf(txt, "\tDisparador ID: %d\n", disparadorIdInt);
         fprintf(txt, "\tBotão: %s\n", botao_esquerdo_ou_direiro);
         fprintf(txt, "\tDX: %f\n", dxDouble);
         fprintf(txt, "\tDY: %f\n", dyDouble);
         fprintf(txt, "\tIX: %f\n", iXDouble);
         fprintf(txt, "\tIY: %f\n", iYDouble);
-        fprintf(txt, "\n");
+        fprintf(txt, "\n\n");
 
-        
+        int qtd_disparos = 0;
         while (!pilhaVazia(*(carregador->formas))) {
             realiza_shift(disparadores, *contagem_disparadores, disparadorIdInt, botao_esquerdo_ou_direiro, 1, carregadores, *contagem_carregadores);
             realiza_disparo(disparadores, *contagem_disparadores, disparadorIdInt,
                             qtd * iXDouble + dxDouble,  qtd * iYDouble + dyDouble, "i", arena, pilha_para_free);
             qtd++;
+            qtd_disparos++;
         }
+        return qtd_disparos;
 }
 
 
-
-
-
-
-
-void executa_calc(Pilha arena, Chao chao, FILE *txtFile) {
+void executa_calc(Pilha arena, Chao chao, FILE *txtFile, int qtd_comandos, int qtd_disparos) {
   
   Pilha temp = criaPilha();
   while (!pilhaVazia(arena)) {
@@ -909,7 +922,10 @@ void executa_calc(Pilha arena, Chao chao, FILE *txtFile) {
   
   double area_total_esmagada = 0.0;
 
-  
+  int total_formas_esmagadas = 0;
+  int total_formas_clonadas = 0;
+
+
   while (!pilhaVazia(temp)) {
     PosicaoFormaArena_t *I = (PosicaoFormaArena_t *)popPilha(temp);
     if (pilhaVazia(temp)) {
@@ -935,8 +951,12 @@ void executa_calc(Pilha arena, Chao chao, FILE *txtFile) {
         if (Jpos != NULL) {
           enqueueFila(get_fila_chao(chao), Jpos);
         }
+
+        total_formas_esmagadas++;
       } else if (areaI >= areaJ) {
         
+        total_formas_clonadas++;
+
          char *fillColorI = NULL;
         switch (I->forma->tipo) {
         case CIRCLE:
@@ -1001,10 +1021,14 @@ void executa_calc(Pilha arena, Chao chao, FILE *txtFile) {
   }
 
   
-  fprintf(txtFile, "[calc]\n");
-  fprintf(txtFile, "\tResultado: %.2lf\n", area_total_esmagada);
+  fprintf(txtFile, "calc:\n");
+  fprintf(txtFile, "\tResultado final: %.2lf\n", area_total_esmagada);
+  fprintf(txtFile, "\tQuantidade de Comandos:%d\n", qtd_comandos);
+  fprintf(txtFile, "\tQuantidade de Disparos:%d\n", qtd_disparos);
+  fprintf(txtFile, "\tTotal de formas esmagadas:%d\n", total_formas_esmagadas);
+  fprintf(txtFile, "\tTotal de formas clonadas:%d\n", total_formas_clonadas);
   fprintf(txtFile, "\n");
-
+  
   desalocaPilha(temp);
 }
 
