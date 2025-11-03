@@ -369,9 +369,9 @@ static void executa_lc(Carregador_t **loaders, int *loadersCount, Chao ground, P
     int loaderId = atoi(identifier);
     int nova_quantia_formas= atoi(primeirasXFormas);
 
-    fprintf(txtFile, "lc\n");
-    fprintf(txtFile, "\tCarregador ID: %d\n", loaderId);
-    fprintf(txtFile, "\tNova quantia de formas: %d\n", nova_quantia_formas);
+    fprintf(txtFile, "--lc\n");
+    fprintf(txtFile, "\t·Carregador ID: %d\n", loaderId);
+    fprintf(txtFile, "\t·Nova quantia de formas: %d\n", nova_quantia_formas);
 
     
     int existingLoaderIndex = -1;
@@ -718,14 +718,14 @@ static void executa_shft(Disparador_t **disparadores, int *contagem_disparadores
     char *botao_esquerdo_ou_direito = strtok(NULL, " ");
     char *qtdPressionada = strtok(NULL, " ");
 
-    fprintf(txt, "shft:\n");
+    fprintf(txt, "--shft:\n");
 
     int disparadorIDInt = atoi(disparadorID);
     int qtdPressionadaInt = atoi(qtdPressionada);
 
-    fprintf(txt, "\tDisparador ID\n: %d", disparadorIDInt);
-    fprintf(txt, "\tBotão: %s", botao_esquerdo_ou_direito);
-    fprintf(txt, "\tQuantidade de vezes pressionado: %d", qtdPressionadaInt);
+    fprintf(txt, "\t·Disparador ID: %d\n", disparadorIDInt);
+    fprintf(txt, "\t·Botão: %s", botao_esquerdo_ou_direito);
+    fprintf(txt, "\t·Quantidade de vezes pressionado: %d", qtdPressionadaInt);
     fprintf(txt, "\n");
 
 
@@ -798,11 +798,11 @@ static void executa_dsp(Disparador_t **disparadores, int *contagem_disparadores,
     double dxDouble = atof(dx);
     double dyDouble = atof(dy);
 
-    fprintf(txt, "dsp:\n");
-    fprintf(txt, "\tDisparador ID: %d\n", disparadorIDInt);
-    fprintf(txt, "\tDX: %f\n", dxDouble);
-    fprintf(txt, "\tDY: %f\n", dyDouble);
-    fprintf(txt, "\tAnotação das dimensões: %s\n\n", dimensoes_annotate);
+    fprintf(txt, "--dsp:\n");
+    fprintf(txt, "\t·Disparador ID: %d\n", disparadorIDInt);
+    fprintf(txt, "\t·DX: %f\n", dxDouble);
+    fprintf(txt, "\t·DY: %f\n", dyDouble);
+    fprintf(txt, "\t·Anotação das dimensões: %s\n\n", dimensoes_annotate);
 
     realiza_disparo(disparadores, *contagem_disparadores, disparadorIDInt, dxDouble,
     dyDouble, dimensoes_annotate, arena, pilha_para_free);
@@ -891,13 +891,13 @@ int executa_rjd(Disparador_t **disparadores, int *contagem_disparadores,
 
         int qtd = 1;
 
-        fprintf(txt, "rjd:\n");
-        fprintf(txt, "\tDisparador ID: %d\n", disparadorIdInt);
-        fprintf(txt, "\tBotão: %s\n", botao_esquerdo_ou_direiro);
-        fprintf(txt, "\tDX: %f\n", dxDouble);
-        fprintf(txt, "\tDY: %f\n", dyDouble);
-        fprintf(txt, "\tIX: %f\n", iXDouble);
-        fprintf(txt, "\tIY: %f\n", iYDouble);
+        fprintf(txt, "--rjd:\n");
+        fprintf(txt, "\t·Disparador ID: %d\n", disparadorIdInt);
+        fprintf(txt, "\t·Botão: %s\n", botao_esquerdo_ou_direiro);
+        fprintf(txt, "\t·DX: %f\n", dxDouble);
+        fprintf(txt, "\t·DY: %f\n", dyDouble);
+        fprintf(txt, "\t·IX: %f\n", iXDouble);
+        fprintf(txt, "\t·IY: %f\n", iYDouble);
         fprintf(txt, "\n\n");
 
         int qtd_disparos = 0;
@@ -1021,12 +1021,12 @@ void executa_calc(Pilha arena, Chao chao, FILE *txtFile, int qtd_comandos, int q
   }
 
   
-  fprintf(txtFile, "calc:\n");
-  fprintf(txtFile, "\tResultado final: %.2lf\n", area_total_esmagada);
-  fprintf(txtFile, "\tQuantidade de Comandos:%d\n", qtd_comandos);
-  fprintf(txtFile, "\tQuantidade de Disparos:%d\n", qtd_disparos);
-  fprintf(txtFile, "\tTotal de formas esmagadas:%d\n", total_formas_esmagadas);
-  fprintf(txtFile, "\tTotal de formas clonadas:%d\n", total_formas_clonadas);
+  fprintf(txtFile, "--calc:\n");
+  fprintf(txtFile, "\t·Resultado final: %.2lf\n", area_total_esmagada);
+  fprintf(txtFile, "\t·Quantidade de Comandos:%d\n", qtd_comandos);
+  fprintf(txtFile, "\t·Quantidade de Disparos:%d\n", qtd_disparos);
+  fprintf(txtFile, "\t·Total de formas esmagadas:%d\n", total_formas_esmagadas);
+  fprintf(txtFile, "\t·Total de formas clonadas:%d\n", total_formas_clonadas);
   fprintf(txtFile, "\n");
   
   desalocaPilha(temp);
