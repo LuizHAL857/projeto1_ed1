@@ -31,7 +31,6 @@ int main(int argc, char *argv[]) {
 
     // Variáveis para armazenar os caminhos completos
     char *caminho_completo_geo    = NULL;
-    char *caminho_completo_output = NULL;
     char *caminho_completo_qry    = NULL;
 
     // Caso o prefixo tenha sido especificado (-e)
@@ -53,18 +52,7 @@ int main(int argc, char *argv[]) {
             caminho_geo = caminho_completo_geo;
         }
 
-        // Monta o caminho completo da pasta de saída
-        if (caminho_output != NULL) {
-            size_t output_tamanho = strlen(caminho_output);
-            caminho_completo_output = (char *) malloc(tamanho_prefixo + output_tamanho + 2);
-
-            if (falta_barra)
-                sprintf(caminho_completo_output, "%s/%s", caminho_prefixo, caminho_output);
-            else
-                sprintf(caminho_completo_output, "%s%s", caminho_prefixo, caminho_output);
-
-            caminho_output = caminho_completo_output;
-        }
+        
 
         // Monta o caminho completo do arquivo QRY
         if (caminho_qry != NULL) {
@@ -120,8 +108,7 @@ int main(int argc, char *argv[]) {
     if (caminho_completo_geo != NULL)
         free(caminho_completo_geo);
 
-    if (caminho_completo_output != NULL)
-        free(caminho_completo_output);
+    
 
     if (caminho_completo_qry != NULL)
         free(caminho_completo_qry);
