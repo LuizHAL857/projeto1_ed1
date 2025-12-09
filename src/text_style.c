@@ -26,7 +26,7 @@ TEXTSTYLE criaTextStyle(char* ff, char* fw, int fs) {
         return NULL;
     }
 
-    textstyle->ff = (char*) malloc(sizeof(ff) + 1);
+    textstyle->ff = (char*) malloc(strlen(ff) + 1);
     if(!textstyle->ff) {
 
         free(textstyle);
@@ -35,7 +35,7 @@ TEXTSTYLE criaTextStyle(char* ff, char* fw, int fs) {
     strcpy(textstyle->ff, ff);
 
 
-    textstyle->fw = (char*) malloc(sizeof(fw) + 1);
+    textstyle->fw = (char*) malloc(strlen(fw) + 1);
 
     if(!textstyle->fw){
 

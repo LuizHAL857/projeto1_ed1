@@ -1,7 +1,8 @@
 #ifndef COR_COMPLEMENTAR_H
 #define COR_COMPLEMENTAR_H
-/*Módulo com uma função utilitária que encontra uma cor complementar a outra no sistema hexadecimal
 
+
+/*Módulo com uma função utilitária que encontra uma cor complementar a outra no sistema hexadecimal
 */
 
 

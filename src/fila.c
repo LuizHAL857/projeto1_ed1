@@ -7,7 +7,7 @@ typedef struct NoFila {
     struct NoFila *prox;
 } NoFila;
 
-// Estrutura interna da fila (opaca externamente)
+
 typedef struct stFila {
     NoFila *inicio;
     NoFila *fim;
